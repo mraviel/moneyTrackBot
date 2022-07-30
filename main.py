@@ -6,6 +6,7 @@ from telegram.ext.messagehandler import MessageHandler
 from telegram.ext.filters import Filters
 from Constants import API_KEY
 import Respones as R
+from datetime import datetime
 
 updater = Updater(API_KEY, use_context=True)
 
@@ -19,10 +20,9 @@ def start(update: Update, context: CallbackContext):
 def handle_message(update: Update, context: CallbackContext):
     # Recv text from user
     text = str(update.message.text).lower()
-    print(text)
 
     # Process the message
-    response = R.sample_responses(text)
+    response = R.Expense(text)
 
     # Send to user
     update.message.reply_text(response)
