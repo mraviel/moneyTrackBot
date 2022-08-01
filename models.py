@@ -7,6 +7,7 @@ class Messages(db.Model):
     """ Messages model """
 
     __tablename__ = "messages"
+    # id = db.Column(db.Integer, primary_key=True)
     message_id = db.Column(db.Integer, primary_key=True)
     author_id = db.Column(db.Integer, nullable=False)
     is_expense = db.Column(db.Boolean, nullable=False, default=True)

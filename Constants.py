@@ -3,7 +3,7 @@
 API_KEY = open('api_key.txt', 'r').readline()
 
 # PSQL KEY
-PSQL_KEY = open('psql_key.txt', 'r').readline()
+PSQL_KEY = open('psql_key.txt', 'r').readline().strip('\n')
 
 
 def strip_all(s):

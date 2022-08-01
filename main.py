@@ -19,10 +19,10 @@ app.secret_key = 'replace later'
 socketio = SocketIO(app)
 
 # Config db
-print([PSQL_KEY.strip('\n')])
-app.config['SQLALCHEMY_DATABASE_URI'] = PSQL_KEY.strip('\n')
+app.config['SQLALCHEMY_DATABASE_URI'] = PSQL_KEY
 db = SQLAlchemy(app)
 
+# Updater for telegram
 updater = Updater(API_KEY, use_context=True)
 
 
@@ -32,26 +32,51 @@ def start(update: Update, context: CallbackContext):
         "Hello And Wellcome to my bot")
 
 
+def helper(update: Update, context: CallbackContext):
+    update.message.reply_text("Helper")
+
+
+def addSubject(update: Update, context: CallbackContext):
+    update.message.reply_text("addSubject")
+
+
+def showSubjects(update: Update, context: CallbackContext):
+    update.message.reply_text("All My Subjects")
+
+
+def deleteRow(update: Update, context: CallbackContext):
+    update.message.reply_text("Delete Last Row")
+
+
+def exportToExcel(update: Update, context: CallbackContext):
+    update.message.reply_text("Export To Excel")
+
+
 def handle_message(update: Update, context: CallbackContext):
     # Recv text from user
     text = str(update.message.text).lower()
 
     # Process the message
     response = P.Expense(text)
-    message_id = update.message.message_id
-    user_id = update.message.from_user.id
-    message_datetime = update.message.date.ctime()
-    subject = response['subject']
-    total = response['total']
+    data = {
+        'message_id': update.message.message_id,
+        'user_id': update.message.from_user.id,
+        'message_datetime': update.message.date.ctime(),
+        'subject': response['subject'],
+        'total': response['total']
+    }
 
-    Message = Messages(message_id=message_id, author_id=user_id, subject=subject, message_datetime=message_datetime, total=total)
+    Message = Messages(message_id=data['message_id'], author_id=data['user_id'], subject=data['subject'],
+                       message_datetime=data['message_datetime'], total=data['total'])
+
     db.session.add(Message)
     db.session.commit()
 
-    print(message_id, user_id, message_datetime, subject, total)
+    print(data)
 
     # Send to user
-    # update.message.reply_text(response)
+    update.message.reply_text(str(data))
+    update.message.reply_text("Saved to DB")
 
 
 def error(update: Update, context: CallbackContext):
@@ -64,14 +89,19 @@ def main():
 
     # Handle Commands
     updater.dispatcher.add_handler(CommandHandler('start', start))
+    updater.dispatcher.add_handler(CommandHandler('help', helper))
+    updater.dispatcher.add_handler(CommandHandler('add', addSubject))
+    updater.dispatcher.add_handler(CommandHandler('del', deleteRow))
+    updater.dispatcher.add_handler(CommandHandler('all', showSubjects))
+    updater.dispatcher.add_handler(CommandHandler('xl', exportToExcel))
 
     # Handle Messages
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
     # Handle errors
-    #updater.dispatcher.add_error_handler(error)
+    updater.dispatcher.add_error_handler(error)
 
-    # Start the session
+    # Start the session/ Every 5 seconds check for update
     updater.start_polling(5)
 
     updater.idle()
