@@ -1,20 +1,27 @@
+import threading
 from flask import Flask
 from flask_socketio import SocketIO
+from flask_sqlalchemy import SQLAlchemy
 from telegram.ext.updater import Updater
 from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext.commandhandler import CommandHandler
 from telegram.ext.messagehandler import MessageHandler
 from telegram.ext.filters import Filters
-from Constants import API_KEY
-import Respones as R
+from Constants import API_KEY, PSQL_KEY
+import Processes as P
+from models import Messages
 from datetime import datetime
 
 # config app
 app = Flask(__name__)
 app.secret_key = 'replace later'
 socketio = SocketIO(app)
-# app.config['SQLALCHEMY_DATABASE_URI'] = KEY
+
+# Config db
+print([PSQL_KEY.strip('\n')])
+app.config['SQLALCHEMY_DATABASE_URI'] = PSQL_KEY.strip('\n')
+db = SQLAlchemy(app)
 
 updater = Updater(API_KEY, use_context=True)
 
@@ -30,17 +37,29 @@ def handle_message(update: Update, context: CallbackContext):
     text = str(update.message.text).lower()
 
     # Process the message
-    response = R.Expense(text)
+    response = P.Expense(text)
+    message_id = update.message.message_id
+    user_id = update.message.from_user.id
+    message_datetime = update.message.date.ctime()
+    subject = response['subject']
+    total = response['total']
+
+    Message = Messages(message_id=message_id, author_id=user_id, subject=subject, message_datetime=message_datetime, total=total)
+    db.session.add(Message)
+    db.session.commit()
+
+    print(message_id, user_id, message_datetime, subject, total)
 
     # Send to user
-    update.message.reply_text(response)
+    # update.message.reply_text(response)
 
 
 def error(update: Update, context: CallbackContext):
+    date = update.message.date.ctime()
     print(f"Update {update} caused error {context.error}")
 
 
-@app.route('/')
+# @app.route('/')
 def main():
 
     # Handle Commands
@@ -50,7 +69,7 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
     # Handle errors
-    updater.dispatcher.add_error_handler(error)
+    #updater.dispatcher.add_error_handler(error)
 
     # Start the session
     updater.start_polling(5)
@@ -58,10 +77,23 @@ def main():
     updater.idle()
 
 
+class FlaskThread(threading.Thread):
+    def run(self):
+        app.run()
+
+
+class TelegramThread(threading.Thread):
+    def run(self):
+        main()
+
+
 if __name__ == '__main__':
 
-    # app.run(debug=False)
-    socketio.run(app, debug=False)
+    flask_thread = FlaskThread()
+    flask_thread.start()
 
+    # telegram_thread = TelegramThread()
+
+    main()
 
 

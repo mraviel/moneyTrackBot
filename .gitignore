@@ -3,3 +3,4 @@ __pycache__/
 flask_session/
 .idea/
 api_key.txt
+psql_key.txt

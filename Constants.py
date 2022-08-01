@@ -1,8 +1,9 @@
 
 # Return the API for the session
-with open("api_key.txt", 'r') as file:
-    api_key = file.readline()
-    API_KEY = api_key
+API_KEY = open('api_key.txt', 'r').readline()
+
+# PSQL KEY
+PSQL_KEY = open('psql_key.txt', 'r').readline()
 
 
 def strip_all(s):
