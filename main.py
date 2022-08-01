@@ -1,4 +1,3 @@
-import threading
 from flask import Flask
 from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
@@ -80,7 +79,6 @@ def handle_message(update: Update, context: CallbackContext):
 
 
 def error(update: Update, context: CallbackContext):
-    date = update.message.date.ctime()
     print(f"Update {update} caused error {context.error}")
 
 
@@ -105,25 +103,4 @@ def main():
     updater.start_polling(5)
 
     updater.idle()
-
-
-class FlaskThread(threading.Thread):
-    def run(self):
-        app.run()
-
-
-class TelegramThread(threading.Thread):
-    def run(self):
-        main()
-
-
-if __name__ == '__main__':
-
-    flask_thread = FlaskThread()
-    flask_thread.start()
-
-    # telegram_thread = TelegramThread()
-
-    main()
-
 
