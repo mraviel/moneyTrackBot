@@ -1,5 +1,4 @@
 from flask import Flask
-from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from telegram.ext.updater import Updater
 from telegram.update import Update
@@ -9,17 +8,20 @@ from telegram.ext.messagehandler import MessageHandler
 from telegram.ext.filters import Filters
 from Constants import API_KEY, PSQL_KEY
 import Processes as P
-from models import Messages
 from datetime import datetime
+import threading
+import models as M
 
-# config app
-app = Flask(__name__)
-app.secret_key = 'replace later'
-socketio = SocketIO(app)
+db = SQLAlchemy()
+def create_app():
+    app = Flask(__name__)
+    db.init_app(app)
+    return app
 
-# Config db
+
+# Configuration
+app = create_app()
 app.config['SQLALCHEMY_DATABASE_URI'] = PSQL_KEY
-db = SQLAlchemy(app)
 
 # Updater for telegram
 updater = Updater(API_KEY, use_context=True)
@@ -30,25 +32,49 @@ def start(update: Update, context: CallbackContext):
     update.message.reply_text(
         "Hello And Wellcome to my bot")
 
+    author_id = update.message.message_id
+    # Used for keep session sync
+    with app.app_context():
+        subjects = M.Subjects.query.filter_by(author_id=author_id).all()
+
+        if not subjects:
+            update.message.reply_text("I'v seen there are no subjects defined\n/add subjects for committing new rows")
+        else:
+            update.message.reply_text(f"Open subjects: {str(subjects)}")
+
 
 def helper(update: Update, context: CallbackContext):
-    update.message.reply_text("Helper")
+
+    text = str(P.help_message())
+    update.message.reply_text(text)
 
 
 def addSubject(update: Update, context: CallbackContext):
-    update.message.reply_text("addSubject")
+    author_id = update.message.message_id
+    subjects = context.args
+    for subject in subjects:
+        M.Subjects(author_id=author_id, subjects_title=subject)
+        # db.session.add(M.Subjects)
+        # db.session.commit()
+        update.message.reply_text(f"{subject} Saved")
+
+    # update.message.reply_text("addSubject")
+    # sql
 
 
 def showSubjects(update: Update, context: CallbackContext):
     update.message.reply_text("All My Subjects")
+    # sql
 
 
 def deleteRow(update: Update, context: CallbackContext):
     update.message.reply_text("Delete Last Row")
+    # sql
 
 
 def exportToExcel(update: Update, context: CallbackContext):
     update.message.reply_text("Export To Excel")
+    # Process
 
 
 def handle_message(update: Update, context: CallbackContext):
@@ -65,7 +91,8 @@ def handle_message(update: Update, context: CallbackContext):
         'total': response['total']
     }
 
-    Message = Messages(message_id=data['message_id'], author_id=data['user_id'], subject=data['subject'],
+    # Save to DB
+    Message = M.Messages(message_id=data['message_id'], author_id=data['user_id'], subject=data['subject'],
                        message_datetime=data['message_datetime'], total=data['total'])
 
     db.session.add(Message)
@@ -88,7 +115,7 @@ def main():
     # Handle Commands
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', helper))
-    updater.dispatcher.add_handler(CommandHandler('add', addSubject))
+    updater.dispatcher.add_handler(CommandHandler('add', addSubject, pass_args=True))
     updater.dispatcher.add_handler(CommandHandler('del', deleteRow))
     updater.dispatcher.add_handler(CommandHandler('all', showSubjects))
     updater.dispatcher.add_handler(CommandHandler('xl', exportToExcel))
@@ -104,3 +131,22 @@ def main():
 
     updater.idle()
 
+
+class FlaskThread(threading.Thread):
+    def run(self):
+        app.run()
+
+
+class TelegramThread(threading.Thread):
+    def run(self):
+        main()
+
+
+if __name__ == '__main__':
+
+    flask_thread = FlaskThread()
+    flask_thread.start()
+
+    # telegram_thread = TelegramThread()
+
+    main()
