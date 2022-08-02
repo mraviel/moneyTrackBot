@@ -6,7 +6,7 @@ class Subjects(db.Model):
 
     __tablename__ = "subjects"
     author_id = db.Column(db.Integer, primary_key=True)
-    subjects_title = subject = db.Column(db.String(20), nullable=False)
+    subjects_title = db.Column(db.String(20), nullable=False)
 
 
 class Messages(db.Model):

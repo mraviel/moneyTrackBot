@@ -20,19 +20,19 @@ def excel_file():
 
 def help_message():
     return "I can help you keep track of your expenses and income" \
-           "\nto help you find a balance" \
+           "\nto help you find life balance." \
            "\nover time my functionality will grow." \
-           "\nfor now here's a quick guide to help you use this bot:" \
+           "\n\nfor now here's a quick guide to help you use this bot:" \
            "\nTo Add new expense just put your subject in one side and the amount" \
            "\non the other side separate with ':' Example --> " \
            "\nFood: 40  //  אוכל: 50 שח " \
            "\nTo insert income just type '+' BEFORE the command" \
-           "\nHere are some of the commands you can run:" \
+           "\n\nHere are some of the commands you can run:" \
            "\n/start --> Popup start message" \
            "\n/help --> Help section" \
-           "\nadd --> Add new subject" \
-           "\ndel --> remove row that added" \
-           "\nxl --> Export excel file with data"
+           "\n/add --> Add new subject" \
+           "\n/del --> remove row that added" \
+           "\n/xl --> Export excel file with data"
 
 
 

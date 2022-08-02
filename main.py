@@ -32,10 +32,11 @@ def start(update: Update, context: CallbackContext):
     update.message.reply_text(
         "Hello And Wellcome to my bot")
 
-    author_id = update.message.message_id
+    author_id = update.message.from_user.id
     # Used for keep session sync
     with app.app_context():
         subjects = M.Subjects.query.filter_by(author_id=author_id).all()
+        print(subjects)
 
         if not subjects:
             update.message.reply_text("I'v seen there are no subjects defined\n/add subjects for committing new rows")
@@ -50,16 +51,16 @@ def helper(update: Update, context: CallbackContext):
 
 
 def addSubject(update: Update, context: CallbackContext):
-    author_id = update.message.message_id
+    author_id = update.message.from_user.id
     subjects = context.args
+    print(subjects)
     for subject in subjects:
-        M.Subjects(author_id=author_id, subjects_title=subject)
-        # db.session.add(M.Subjects)
-        # db.session.commit()
-        update.message.reply_text(f"{subject} Saved")
-
-    # update.message.reply_text("addSubject")
-    # sql
+        with app.app_context():
+            print(subject)
+            new_subject = M.Subjects(author_id=author_id, subjects_title=subject)
+            db.session.add(new_subject)
+            db.session.commit()
+            update.message.reply_text(f"{subject} Saved")
 
 
 def showSubjects(update: Update, context: CallbackContext):
@@ -68,6 +69,16 @@ def showSubjects(update: Update, context: CallbackContext):
 
 
 def deleteRow(update: Update, context: CallbackContext):
+    """ Delete the last row in Messages table """
+    author_id = update.message.from_user.id
+    with app.app_context():
+        last_message_obj = M.Messages.query.filter_by(author_id=author_id).last()
+        if last_message_obj:
+            delete_last_message = db.session.get(M.Messages, last_message_obj.message_id)
+            db.session.delete(delete_last_message)
+            db.session.commit()
+
+
     update.message.reply_text("Delete Last Row")
     # sql
 
@@ -91,18 +102,32 @@ def handle_message(update: Update, context: CallbackContext):
         'total': response['total']
     }
 
-    # Save to DB
-    Message = M.Messages(message_id=data['message_id'], author_id=data['user_id'], subject=data['subject'],
-                       message_datetime=data['message_datetime'], total=data['total'])
+    # Check if new message subject is in subjects list for user
+    author_id = update.message.from_user.id
+    with app.app_context():
+        subjects = M.Subjects.query.filter_by(author_id=author_id).all()
+        subjects_titles = []
+        for subject in subjects:
+            subjects_titles.append(subject.subjects_title)
 
-    db.session.add(Message)
-    db.session.commit()
+    if data['subject'] in subjects_titles:
 
-    print(data)
+        # Save to DB
+        with app.app_context():
+            Message = M.Messages(message_id=data['message_id'], author_id=data['user_id'], subject=data['subject'],
+                               message_datetime=data['message_datetime'], total=data['total'])
 
-    # Send to user
-    update.message.reply_text(str(data))
-    update.message.reply_text("Saved to DB")
+            db.session.add(Message)
+            db.session.commit()
+
+        print(data)
+
+        # Send to user
+        update.message.reply_text(str(data))
+        update.message.reply_text("Saved to DB")
+
+    else:
+        update.message.reply_text(f"Subject: {data['subject']} not in your subjects\n/add him before using him")
 
 
 def error(update: Update, context: CallbackContext):
@@ -124,7 +149,7 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
     # Handle errors
-    updater.dispatcher.add_error_handler(error)
+    # updater.dispatcher.add_error_handler(error)
 
     # Start the session/ Every 5 seconds check for update
     updater.start_polling(5)
