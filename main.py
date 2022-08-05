@@ -66,7 +66,6 @@ def addSubject(update: Update, context: CallbackContext):
 
     # Strip the last space
     main_subject = main_subject.strip()
-    print([main_subject])
 
     with app.app_context():
         new_subject = M.Subjects(author_id=author_id, subjects_title=main_subject)
@@ -76,8 +75,39 @@ def addSubject(update: Update, context: CallbackContext):
 
 
 def deleteSubject(update: Update, context: CallbackContext):
-    update.message.reply_text("All My Subjects")
-    # sql
+    """ Delete subject """
+    author_id = update.message.from_user.id
+
+    # Get all the subjects
+    subjects = context.args
+
+    # Save all "subjects" to one subject
+    main_subject = ""
+    for subject in subjects:
+        main_subject += subject + " "
+
+    # Strip the last space
+    main_subject = main_subject.strip()
+
+    # Get all subjects
+    with app.app_context():
+        subjects = M.Subjects.query.filter_by(author_id=author_id).all()
+
+        # Search for subject and if exists delete it.
+        for subject in subjects:
+
+            if main_subject == subject.subjects_title:
+                subject_obj = M.Subjects.query.filter_by(subjects_title=main_subject).first()  # Message to delete
+
+                # Delete
+                if subject_obj:
+                    delete_subject = db.session.get(M.Subjects, subject_obj.id)
+                    db.session.delete(delete_subject)
+                    db.session.commit()
+                    update.message.reply_text(f"{main_subject} Deleted")
+                    return
+
+        update.message.reply_text(f"{main_subject} Not Found")
 
 
 def deleteRow(update: Update, context: CallbackContext):
@@ -219,7 +249,7 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
     # Handle errors
-    updater.dispatcher.add_error_handler(error)
+    # updater.dispatcher.add_error_handler(error)
 
     # Start the session/ Every 5 seconds check for update
     updater.start_polling(5)

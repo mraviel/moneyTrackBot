@@ -34,6 +34,7 @@ def help_message():
            "\n/start --> Popup start message" \
            "\n/help --> Help section" \
            "\n/add --> Add new subject" \
+           "\n/delsub --> Delete subject" \
            "\n/del --> remove row that added" \
            "\n/xl --> Export excel file with data" \
            "\n/sum  --> All the expenses and income calculated for this month" \
