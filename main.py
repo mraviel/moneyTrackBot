@@ -92,7 +92,24 @@ def exportToExcel(update: Update, context: CallbackContext):
 
 
 def Sum(update: Update, context: CallbackContext):
-    update.message.reply_text("Sum")
+
+    author_id = update.message.from_user.id
+    current_month = int(datetime.now().strftime("%m"))
+
+    # Get all messages for current user
+    with app.app_context():
+        all_expenses = M.Messages.query.filter_by(author_id=author_id, is_expense=True).all()
+        all_income = M.Messages.query.filter_by(author_id=author_id, is_expense=False).all()
+
+        # Get the messages for the current month
+        month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month, all_expenses))
+        month_income = list(filter(lambda exp: exp.message_datetime.month == current_month, all_income))
+
+        expenses = 0
+        for expense in month_expenses:
+            expenses -= expense.total
+
+    update.message.reply_text(str(expenses))
 
 
 def handle_message(update: Update, context: CallbackContext):
