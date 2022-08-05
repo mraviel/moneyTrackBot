@@ -211,7 +211,6 @@ def handle_message(update: Update, context: CallbackContext):
             subjects_titles.append(subject.subjects_title)
 
     if data['subject'] in subjects_titles:
-
         # Save to DB
         with app.app_context():
             Message = M.Messages(message_id=data['message_id'], author_id=data['user_id'], subject=data['subject'],
@@ -222,7 +221,7 @@ def handle_message(update: Update, context: CallbackContext):
 
         # Send to user
         update.message.reply_text(str(data))
-        update.message.reply_text(f"Saved to DB ({data['subject']: {data['total']}})")
+        update.message.reply_text(f"Saved to DB ({data['subject']}: {data['total']})")
 
     else:
         update.message.reply_text(f"Subject: {data['subject']} not in your subjects\n/add him before using him")

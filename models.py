@@ -23,7 +23,7 @@ class Messages(db.Model):
     is_expense = db.Column(db.Boolean, nullable=False, default=True)
     message_datetime = db.Column(db.Date, nullable=False)
     subject = db.Column(db.String(20), nullable=False)
-    total = db.Column(db.Integer, nullable=False)
+    total = db.Column(db.Numeric, nullable=False)
 
 
 

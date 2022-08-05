@@ -9,13 +9,16 @@ def Expense(input_text):
         amount = user_message.split(':')[1]
         amount = C.strip_all(amount)
 
-        return {'subject': type_of, 'total': amount}
+        # Only numbers pass
+        try:
+            float(amount)
+        except ValueError:
+            return None
+
+        return {'subject': type_of, 'total': float(amount)}
 
     else:
         return None
-
-        # return f"Type: {expense_type}, Expense: {expense}"
-
 
 def excel_file():
     pass
