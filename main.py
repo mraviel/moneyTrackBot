@@ -91,7 +91,28 @@ def exportToExcel(update: Update, context: CallbackContext):
     # Process
 
 
+def Expenses(update: Update, context: CallbackContext):
+    """ Get count of all my expenses this month """
+
+    author_id = update.message.from_user.id
+    current_month = int(datetime.now().strftime("%m"))
+
+    # Get all messages for current user
+    with app.app_context():
+        all_expenses = M.Messages.query.filter_by(author_id=author_id, is_expense=True).all()
+
+        # Get the messages for the current month
+        month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month, all_expenses))
+
+        expenses = 0
+        for expense in month_expenses:
+            expenses -= expense.total
+
+    update.message.reply_text(str(expenses))
+
+
 def Sum(update: Update, context: CallbackContext):
+    """ Calculate Income - all the expense's for current month"""
 
     author_id = update.message.from_user.id
     current_month = int(datetime.now().strftime("%m"))
@@ -109,7 +130,14 @@ def Sum(update: Update, context: CallbackContext):
         for expense in month_expenses:
             expenses -= expense.total
 
-    update.message.reply_text(str(expenses))
+        incomes = 0
+        for income in month_income:
+            incomes += income.total
+
+        # Calculate the sum
+        sum_for_now = expenses + incomes
+
+    update.message.reply_text(str(sum_for_now))
 
 
 def handle_message(update: Update, context: CallbackContext):
@@ -169,6 +197,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('all', showSubjects))
     updater.dispatcher.add_handler(CommandHandler('xl', exportToExcel))
     updater.dispatcher.add_handler(CommandHandler('sum', Sum))
+    updater.dispatcher.add_handler(CommandHandler('exp', Expenses))
 
     # Handle Messages
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
