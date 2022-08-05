@@ -198,6 +198,7 @@ def handle_message(update: Update, context: CallbackContext):
         'message_id': update.message.message_id,
         'user_id': update.message.from_user.id,
         'message_datetime': update.message.date.ctime(),
+        'is_expense': response['is_expense'],
         'subject': response['subject'],
         'total': response['total']
     }
@@ -214,14 +215,16 @@ def handle_message(update: Update, context: CallbackContext):
         # Save to DB
         with app.app_context():
             Message = M.Messages(message_id=data['message_id'], author_id=data['user_id'], subject=data['subject'],
-                               message_datetime=data['message_datetime'], total=data['total'])
+                               message_datetime=data['message_datetime'], total=data['total'],
+                                is_expense=data['is_expense'])
 
             db.session.add(Message)
             db.session.commit()
 
         # Send to user
-        update.message.reply_text(str(data))
-        update.message.reply_text(f"Saved to DB ({data['subject']}: {data['total']})")
+        # update.message.reply_text(str(data))
+        convertor = {True: '-', False: '+'}
+        update.message.reply_text(f"Saved to DB ({data['subject']}: {convertor[data['is_expense']]}{data['total']})")
 
     else:
         update.message.reply_text(f"Subject: {data['subject']} not in your subjects\n/add him before using him")
@@ -248,7 +251,7 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
     # Handle errors
-    # updater.dispatcher.add_error_handler(error)
+    updater.dispatcher.add_error_handler(error)
 
     # Start the session/ Every 5 seconds check for update
     updater.start_polling(5)

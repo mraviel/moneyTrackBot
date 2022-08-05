@@ -15,10 +15,16 @@ def Expense(input_text):
         except ValueError:
             return None
 
-        return {'subject': type_of, 'total': float(amount)}
+        # Check if income or expense
+        if '+' == user_message[0]:
+            type_of = type_of[1:]
+            return {'subject': type_of, 'total': float(amount), 'is_expense': False}
+        else:
+            return {'subject': type_of, 'total': float(amount), 'is_expense': True}
 
     else:
         return None
+
 
 def excel_file():
     pass
