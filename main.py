@@ -55,15 +55,24 @@ def helper(update: Update, context: CallbackContext):
 
 def addSubject(update: Update, context: CallbackContext):
     author_id = update.message.from_user.id
+
+    # Get all the subjects
     subjects = context.args
-    print(subjects)
+
+    # Save all "subjects" to one subject
+    main_subject = ""
     for subject in subjects:
-        with app.app_context():
-            print(subject)
-            new_subject = M.Subjects(author_id=author_id, subjects_title=subject)
-            db.session.add(new_subject)
-            db.session.commit()
-            update.message.reply_text(f"{subject} Saved")
+        main_subject += subject + " "
+
+    # Strip the last space
+    main_subject = main_subject.strip()
+    print([main_subject])
+
+    with app.app_context():
+        new_subject = M.Subjects(author_id=author_id, subjects_title=main_subject)
+        db.session.add(new_subject)
+        db.session.commit()
+        update.message.reply_text(f"{main_subject} Saved")
 
 
 def deleteSubject(update: Update, context: CallbackContext):
