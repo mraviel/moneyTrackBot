@@ -32,7 +32,8 @@ def help_message():
            "\n/help --> Help section" \
            "\n/add --> Add new subject" \
            "\n/del --> remove row that added" \
-           "\n/xl --> Export excel file with data"
+           "\n/xl --> Export excel file with data" \
+           "\n/sum  --> All the expenses for this month until now"
 
 
 

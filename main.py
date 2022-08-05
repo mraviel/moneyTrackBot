@@ -71,20 +71,28 @@ def showSubjects(update: Update, context: CallbackContext):
 def deleteRow(update: Update, context: CallbackContext):
     """ Delete the last row in Messages table """
     author_id = update.message.from_user.id
+
+    # Get the last current user message
     with app.app_context():
-        last_message_obj = M.Messages.query.filter_by(author_id=author_id).last()
+        last_message_obj = M.Messages.query.filter_by(author_id=author_id).\
+            order_by(M.Messages.message_id.desc()).first()
+
+        print(last_message_obj)
         if last_message_obj:
             delete_last_message = db.session.get(M.Messages, last_message_obj.message_id)
             db.session.delete(delete_last_message)
             db.session.commit()
 
-    update.message.reply_text("Delete Last Row")
-    # sql
+    update.message.reply_text(f"Delete Last Row ({last_message_obj.subject}: {last_message_obj.total})")
 
 
 def exportToExcel(update: Update, context: CallbackContext):
     update.message.reply_text("Export To Excel")
     # Process
+
+
+def Sum(update: Update, context: CallbackContext):
+    update.message.reply_text("Sum")
 
 
 def handle_message(update: Update, context: CallbackContext):
@@ -143,6 +151,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('del', deleteRow))
     updater.dispatcher.add_handler(CommandHandler('all', showSubjects))
     updater.dispatcher.add_handler(CommandHandler('xl', exportToExcel))
+    updater.dispatcher.add_handler(CommandHandler('sum', Sum))
 
     # Handle Messages
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
