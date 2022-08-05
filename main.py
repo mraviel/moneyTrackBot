@@ -78,7 +78,6 @@ def deleteRow(update: Update, context: CallbackContext):
             db.session.delete(delete_last_message)
             db.session.commit()
 
-
     update.message.reply_text("Delete Last Row")
     # sql
 
@@ -156,22 +155,3 @@ def main():
 
     updater.idle()
 
-
-class FlaskThread(threading.Thread):
-    def run(self):
-        app.run()
-
-
-class TelegramThread(threading.Thread):
-    def run(self):
-        main()
-
-
-if __name__ == '__main__':
-
-    flask_thread = FlaskThread()
-    flask_thread.start()
-
-    # telegram_thread = TelegramThread()
-
-    main()
