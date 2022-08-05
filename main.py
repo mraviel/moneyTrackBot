@@ -36,12 +36,15 @@ def start(update: Update, context: CallbackContext):
     # Used for keep session sync
     with app.app_context():
         subjects = M.Subjects.query.filter_by(author_id=author_id).all()
-        print(subjects)
 
         if not subjects:
             update.message.reply_text("I'v seen there are no subjects defined\n/add subjects for committing new rows")
         else:
-            update.message.reply_text(f"Open subjects: {str(subjects)}")
+            # subjects_title = list(filter(lambda subject: subject.subjects_title, subjects))
+            subjects_title = ""
+            for subject in subjects:
+                subjects_title += "\n" + subject.subjects_title
+            update.message.reply_text(f"Open subjects: {subjects_title}")
 
 
 def helper(update: Update, context: CallbackContext):
@@ -63,7 +66,7 @@ def addSubject(update: Update, context: CallbackContext):
             update.message.reply_text(f"{subject} Saved")
 
 
-def showSubjects(update: Update, context: CallbackContext):
+def deleteSubject(update: Update, context: CallbackContext):
     update.message.reply_text("All My Subjects")
     # sql
 
@@ -146,6 +149,12 @@ def handle_message(update: Update, context: CallbackContext):
 
     # Process the message
     response = P.Expense(text)
+
+    # If message is not valid
+    if not response:
+        update.message.reply_text(f"Not Valid")
+        return
+
     data = {
         'message_id': update.message.message_id,
         'user_id': update.message.from_user.id,
@@ -172,11 +181,9 @@ def handle_message(update: Update, context: CallbackContext):
             db.session.add(Message)
             db.session.commit()
 
-        print(data)
-
         # Send to user
         update.message.reply_text(str(data))
-        update.message.reply_text("Saved to DB")
+        update.message.reply_text(f"Saved to DB ({data['subject']: {data['total']}})")
 
     else:
         update.message.reply_text(f"Subject: {data['subject']} not in your subjects\n/add him before using him")
@@ -194,7 +201,7 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('help', helper))
     updater.dispatcher.add_handler(CommandHandler('add', addSubject, pass_args=True))
     updater.dispatcher.add_handler(CommandHandler('del', deleteRow))
-    updater.dispatcher.add_handler(CommandHandler('all', showSubjects))
+    updater.dispatcher.add_handler(CommandHandler('delsub', deleteSubject, pass_args=True))
     updater.dispatcher.add_handler(CommandHandler('xl', exportToExcel))
     updater.dispatcher.add_handler(CommandHandler('sum', Sum))
     updater.dispatcher.add_handler(CommandHandler('exp', Expenses))
@@ -203,7 +210,7 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
     # Handle errors
-    # updater.dispatcher.add_error_handler(error)
+    updater.dispatcher.add_error_handler(error)
 
     # Start the session/ Every 5 seconds check for update
     updater.start_polling(5)

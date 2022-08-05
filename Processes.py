@@ -11,6 +11,9 @@ def Expense(input_text):
 
         return {'subject': type_of, 'total': amount}
 
+    else:
+        return None
+
         # return f"Type: {expense_type}, Expense: {expense}"
 
 
@@ -33,7 +36,8 @@ def help_message():
            "\n/add --> Add new subject" \
            "\n/del --> remove row that added" \
            "\n/xl --> Export excel file with data" \
-           "\n/sum  --> All the expenses for this month until now"
+           "\n/sum  --> All the expenses and income calculated for this month" \
+           "\n/exp --> All the expenses for this month until now"
 
 
 
