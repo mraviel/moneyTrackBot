@@ -48,13 +48,17 @@ def start(update: Update, context: CallbackContext):
 
 
 def helper(update: Update, context: CallbackContext):
-
+    """ Helper func """
     text = str(P.help_message())
     update.message.reply_text(text)
 
 
 def addSubject(update: Update, context: CallbackContext):
+    """ Add subject """
     author_id = update.message.from_user.id
+
+    if not P.check_if_me(author_id, update):
+        return
 
     # Get all the subjects
     subjects = context.args
@@ -68,6 +72,13 @@ def addSubject(update: Update, context: CallbackContext):
     main_subject = main_subject.strip()
 
     with app.app_context():
+        # Check if subject already exists for the user
+        current_subjects = M.Subjects.query.filter_by(author_id=author_id).all()
+        for subject in current_subjects:
+            if main_subject == subject.subjects_title:
+                update.message.reply_text(f"This subject already exists")
+                return
+
         new_subject = M.Subjects(author_id=author_id, subjects_title=main_subject)
         db.session.add(new_subject)
         db.session.commit()
@@ -77,6 +88,9 @@ def addSubject(update: Update, context: CallbackContext):
 def deleteSubject(update: Update, context: CallbackContext):
     """ Delete subject """
     author_id = update.message.from_user.id
+
+    if not P.check_if_me(author_id, update):
+        return
 
     # Get all the subjects
     subjects = context.args
@@ -114,6 +128,9 @@ def deleteRow(update: Update, context: CallbackContext):
     """ Delete the last row in Messages table """
     author_id = update.message.from_user.id
 
+    if not P.check_if_me(author_id, update):
+        return
+
     # Get the last current user message
     with app.app_context():
         last_message_obj = M.Messages.query.filter_by(author_id=author_id).\
@@ -137,6 +154,10 @@ def Expenses(update: Update, context: CallbackContext):
     """ Get count of all my expenses this month """
 
     author_id = update.message.from_user.id
+
+    if not P.check_if_me(author_id, update):
+        return
+
     current_month = int(datetime.now().strftime("%m"))
 
     # Get all messages for current user
@@ -157,6 +178,10 @@ def Sum(update: Update, context: CallbackContext):
     """ Calculate Income - all the expense's for current month"""
 
     author_id = update.message.from_user.id
+
+    if not P.check_if_me(author_id, update):
+        return
+
     current_month = int(datetime.now().strftime("%m"))
 
     # Get all messages for current user
@@ -183,6 +208,12 @@ def Sum(update: Update, context: CallbackContext):
 
 
 def handle_message(update: Update, context: CallbackContext):
+    """ Handle message """
+    author_id = update.message.from_user.id
+
+    if not P.check_if_me(author_id, update):
+        return
+
     # Recv text from user
     text = str(update.message.text).lower()
 
@@ -222,7 +253,6 @@ def handle_message(update: Update, context: CallbackContext):
             db.session.commit()
 
         # Send to user
-        # update.message.reply_text(str(data))
         convertor = {True: '-', False: '+'}
         update.message.reply_text(f"Saved to DB ({data['subject']}: {convertor[data['is_expense']]}{data['total']})")
 
@@ -234,7 +264,6 @@ def error(update: Update, context: CallbackContext):
     print(f"Update {update} caused error {context.error}")
 
 
-# @app.route('/')
 def main():
 
     # Handle Commands

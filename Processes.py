@@ -1,6 +1,15 @@
 import Constants as C
 
 
+def check_if_me(author_id, update):
+    # Only me can use this bot
+    if str(author_id) != str(C.MY_ID):
+        update.message.reply_text(f"You are not authorized for this bot")
+        return False
+    else:
+        return True
+
+
 # All the processes
 def Expense(input_text):
     user_message = str(input_text).lower()
@@ -15,7 +24,7 @@ def Expense(input_text):
         except ValueError:
             return None
 
-        # Check if income or expense
+        # Check if income or expense and send
         if '+' == user_message[0]:
             type_of = type_of[1:]
             return {'subject': type_of, 'total': float(amount), 'is_expense': False}
@@ -45,7 +54,7 @@ def help_message():
            "\n/add --> Add new subject" \
            "\n/delsub --> Delete subject" \
            "\n/del --> remove row that added" \
-           "\n/xl --> Export excel file with data" \
+           "\n/xl --> Export excel file with data (in dev)" \
            "\n/sum  --> All the expenses and income calculated for this month" \
            "\n/exp --> All the expenses for this month until now"
 
