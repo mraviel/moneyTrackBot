@@ -9,8 +9,7 @@ from telegram.ext.filters import Filters
 from Constants import API_KEY, PSQL_KEY
 import Processes as P
 from datetime import datetime
-import threading
-import models as M
+from DatabaseCommands import DatabaseCommands
 
 db = SQLAlchemy()
 def create_app():
@@ -22,6 +21,8 @@ def create_app():
 # Configuration
 app = create_app()
 app.config['SQLALCHEMY_DATABASE_URI'] = PSQL_KEY
+
+db_command = DatabaseCommands(db)
 
 # Updater for telegram
 updater = Updater(API_KEY, use_context=True)
@@ -35,7 +36,7 @@ def start(update: Update, context: CallbackContext):
     author_id = update.message.from_user.id
     # Used for keep session sync
     with app.app_context():
-        subjects = M.Subjects.query.filter_by(author_id=author_id).all()
+        subjects = db_command.get_all_subjects(author_id=author_id)
 
         if not subjects:
             update.message.reply_text("I'v seen there are no subjects defined\n/add subjects for committing new rows")
@@ -73,15 +74,13 @@ def addSubject(update: Update, context: CallbackContext):
 
     with app.app_context():
         # Check if subject already exists for the user
-        current_subjects = M.Subjects.query.filter_by(author_id=author_id).all()
+        current_subjects = db_command.get_all_subjects(author_id=author_id)
         for subject in current_subjects:
             if main_subject == subject.subjects_title:
                 update.message.reply_text(f"This subject already exists")
                 return
 
-        new_subject = M.Subjects(author_id=author_id, subjects_title=main_subject)
-        db.session.add(new_subject)
-        db.session.commit()
+        db_command.add_subject(main_subject, author_id)
         update.message.reply_text(f"{main_subject} Saved")
 
 
@@ -105,23 +104,12 @@ def deleteSubject(update: Update, context: CallbackContext):
 
     # Get all subjects
     with app.app_context():
-        subjects = M.Subjects.query.filter_by(author_id=author_id).all()
 
-        # Search for subject and if exists delete it.
-        for subject in subjects:
-
-            if main_subject == subject.subjects_title:
-                subject_obj = M.Subjects.query.filter_by(subjects_title=main_subject).first()  # Message to delete
-
-                # Delete
-                if subject_obj:
-                    delete_subject = db.session.get(M.Subjects, subject_obj.id)
-                    db.session.delete(delete_subject)
-                    db.session.commit()
-                    update.message.reply_text(f"{main_subject} Deleted")
-                    return
-
-        update.message.reply_text(f"{main_subject} Not Found")
+        is_deleted = db_command.delete_subject(main_subject, author_id)
+        if is_deleted:
+            update.message.reply_text(f"{main_subject} Deleted")
+        else:
+            update.message.reply_text(f"{main_subject} Not Found")
 
 
 def deleteRow(update: Update, context: CallbackContext):
@@ -131,21 +119,43 @@ def deleteRow(update: Update, context: CallbackContext):
     if not P.check_if_me(author_id, update):
         return
 
-    # Get the last current user message
     with app.app_context():
-        last_message_obj = M.Messages.query.filter_by(author_id=author_id).\
-            order_by(M.Messages.message_id.desc()).first()
-
-        print(last_message_obj)
-        if last_message_obj:
-            delete_last_message = db.session.get(M.Messages, last_message_obj.message_id)
-            db.session.delete(delete_last_message)
-            db.session.commit()
+        last_message_obj = db_command.delete_last_row(author_id)
 
     update.message.reply_text(f"Delete Last Row ({last_message_obj.subject}: {last_message_obj.total})")
 
 
 def exportToExcel(update: Update, context: CallbackContext):
+
+    author_id = update.message.from_user.id
+
+    if not P.check_if_me(author_id, update):
+        return
+
+    current_month = int(datetime.now().strftime("%m"))
+
+    l_exp = []
+    l_inc = []
+
+    # Get all messages for current user
+    with app.app_context():
+        all_expenses = db_command.get_all_expenses(author_id=author_id)
+        all_income = db_command.get_all_income(author_id=author_id)
+
+        # Get the messages for the current month
+        month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month, all_expenses))
+        month_income = list(filter(lambda exp: exp.message_datetime.month == current_month, all_income))
+
+        for expense in month_expenses:
+            exp = [expense.subject, expense.total]
+            l_exp.append(exp)
+
+        for income in month_income:
+            inc = [income.subject, income.total]
+            l_inc.append(inc)
+
+    # Call function that takes two types of lists
+
     update.message.reply_text("Export To Excel")
     # Process
 
@@ -162,7 +172,7 @@ def Expenses(update: Update, context: CallbackContext):
 
     # Get all messages for current user
     with app.app_context():
-        all_expenses = M.Messages.query.filter_by(author_id=author_id, is_expense=True).all()
+        all_expenses = db_command.get_all_expenses(author_id=author_id)
 
         # Get the messages for the current month
         month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month, all_expenses))
@@ -186,8 +196,8 @@ def Sum(update: Update, context: CallbackContext):
 
     # Get all messages for current user
     with app.app_context():
-        all_expenses = M.Messages.query.filter_by(author_id=author_id, is_expense=True).all()
-        all_income = M.Messages.query.filter_by(author_id=author_id, is_expense=False).all()
+        all_expenses = db_command.get_all_expenses(author_id=author_id)
+        all_income = db_command.get_all_income(author_id=author_id)
 
         # Get the messages for the current month
         month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month, all_expenses))
@@ -237,7 +247,7 @@ def handle_message(update: Update, context: CallbackContext):
     # Check if new message subject is in subjects list for user
     author_id = update.message.from_user.id
     with app.app_context():
-        subjects = M.Subjects.query.filter_by(author_id=author_id).all()
+        subjects = db_command.get_all_subjects(author_id=author_id)
         subjects_titles = []
         for subject in subjects:
             subjects_titles.append(subject.subjects_title)
@@ -245,12 +255,7 @@ def handle_message(update: Update, context: CallbackContext):
     if data['subject'] in subjects_titles:
         # Save to DB
         with app.app_context():
-            Message = M.Messages(message_id=data['message_id'], author_id=data['user_id'], subject=data['subject'],
-                               message_datetime=data['message_datetime'], total=data['total'],
-                                is_expense=data['is_expense'])
-
-            db.session.add(Message)
-            db.session.commit()
+            db_command.add_new_massage(data)
 
         # Send to user
         convertor = {True: '-', False: '+'}
