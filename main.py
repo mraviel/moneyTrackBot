@@ -10,8 +10,11 @@ from Constants import API_KEY, PSQL_KEY
 import Processes as P
 from datetime import datetime
 from DatabaseCommands import DatabaseCommands
+from excel_generator import ExcelGen
 
 db = SQLAlchemy()
+
+
 def create_app():
     app = Flask(__name__)
     db.init_app(app)
@@ -23,6 +26,7 @@ app = create_app()
 app.config['SQLALCHEMY_DATABASE_URI'] = PSQL_KEY
 
 db_command = DatabaseCommands(db)
+excel_gen = ExcelGen()
 
 # Updater for telegram
 updater = Updater(API_KEY, use_context=True)
@@ -126,35 +130,46 @@ def deleteRow(update: Update, context: CallbackContext):
 
 
 def exportToExcel(update: Update, context: CallbackContext):
-
     author_id = update.message.from_user.id
 
     if not P.check_if_me(author_id, update):
         return
 
     current_month = int(datetime.now().strftime("%m"))
+    current_year = int(datetime.now().strftime("%Y"))
 
-    l_exp = []
-    l_inc = []
+    months_data = {}
+    months_names = ["YEAR", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
     # Get all messages for current user
     with app.app_context():
         all_expenses = db_command.get_all_expenses(author_id=author_id)
         all_income = db_command.get_all_income(author_id=author_id)
 
-        # Get the messages for the current month
-        month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month, all_expenses))
-        month_income = list(filter(lambda exp: exp.message_datetime.month == current_month, all_income))
+        # loop throw all month pass for this year
+        for i in range(1, current_month + 1):
+            l_exp = []
+            l_inc = []
+            # Get the messages for the current month and year
+            month_expenses = list(filter(lambda exp: exp.message_datetime.month == i
+                                         and exp.message_datetime.year == current_year, all_expenses))
 
-        for expense in month_expenses:
-            exp = [expense.subject, expense.total]
-            l_exp.append(exp)
+            month_income = list(filter(lambda inc: inc.message_datetime.month == i
+                                       and inc.message_datetime.year == current_year, all_income))
 
-        for income in month_income:
-            inc = [income.subject, income.total]
-            l_inc.append(inc)
+            for expense in month_expenses:
+                exp = [expense.subject, float(expense.total)]
+                l_exp.append(exp)
 
-    # Call function that takes two types of lists
+            for income in month_income:
+                inc = [income.subject, float(income.total)]
+                l_inc.append(inc)
+
+            months_data[months_names[i]] = [l_exp, l_inc]
+
+        print(months_data)
+        excel_gen.create_excel1(months_data)
+        # print(months_data)
 
     update.message.reply_text("Export To Excel")
     # Process
@@ -169,13 +184,15 @@ def Expenses(update: Update, context: CallbackContext):
         return
 
     current_month = int(datetime.now().strftime("%m"))
+    current_year = int(datetime.now().strftime("%Y"))
 
     # Get all messages for current user
     with app.app_context():
         all_expenses = db_command.get_all_expenses(author_id=author_id)
 
         # Get the messages for the current month
-        month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month, all_expenses))
+        month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month
+                                     and exp.message_datetime.year == current_year, all_expenses))
 
         expenses = 0
         for expense in month_expenses:
@@ -193,6 +210,7 @@ def Sum(update: Update, context: CallbackContext):
         return
 
     current_month = int(datetime.now().strftime("%m"))
+    current_year = int(datetime.now().strftime("%Y"))
 
     # Get all messages for current user
     with app.app_context():
@@ -200,8 +218,10 @@ def Sum(update: Update, context: CallbackContext):
         all_income = db_command.get_all_income(author_id=author_id)
 
         # Get the messages for the current month
-        month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month, all_expenses))
-        month_income = list(filter(lambda exp: exp.message_datetime.month == current_month, all_income))
+        month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month
+                                     and exp.message_datetime.year == current_year, all_expenses))
+        month_income = list(filter(lambda exp: exp.message_datetime.month == current_month
+                                   and exp.message_datetime.year == current_year, all_income))
 
         expenses = 0
         for expense in month_expenses:
@@ -270,7 +290,6 @@ def error(update: Update, context: CallbackContext):
 
 
 def main():
-
     # Handle Commands
     updater.dispatcher.add_handler(CommandHandler('start', start))
     updater.dispatcher.add_handler(CommandHandler('help', helper))
@@ -285,10 +304,9 @@ def main():
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
 
     # Handle errors
-    updater.dispatcher.add_error_handler(error)
+    # updater.dispatcher.add_error_handler(error)
 
     # Start the session/ Every 5 seconds check for update
     updater.start_polling(5)
 
     updater.idle()
-
