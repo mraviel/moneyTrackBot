@@ -6,8 +6,8 @@ import os
 
 
 def add_to_format(existing_format, dict_of_properties, workbook):
-    """Give a format you want to extend and a dict of the properties you want to
-    extend it with, and you get them returned in a single format"""
+    """ Give a format you want to extend and a dict of the properties you want to
+    extend it with, and you get them returned in a single format """
     new_dict = {}
     for key, value in existing_format.__dict__.items():
         if (value != 0) and (value != {}) and (value is not None):
@@ -22,7 +22,7 @@ def add_to_format(existing_format, dict_of_properties, workbook):
 
 
 def box(workbook, worksheet, row_start, col_start, row_stop, col_stop, fill=False):
-    """Makes an RxC box. Use integers, not the 'A1' format"""
+    """ Makes an RxC box. Use integers, not the 'A1' format """
 
     rows = row_stop - row_start + 1
     cols = col_stop - col_start + 1
@@ -55,6 +55,9 @@ def box(workbook, worksheet, row_start, col_start, row_stop, col_stop, fill=Fals
 
 class ExcelGen:
 
+    """ Create Excel file.
+        To Create the file use only the function create_excel with months_data as argument """
+
     def __init__(self):
 
         # Create a Pandas Excel writer using XlsxWriter as the engine.
@@ -86,7 +89,9 @@ class ExcelGen:
         self.percent_format.set_bold()
 
     def write_month_expenses(self, l_exp, month):
-        """ Get list of expenses and write them is the month specified """
+        """ Args: l_exp: list of expenses [[subject, amount], [...], ...]
+                  month: short month name, ex: AUG ...
+                  Add the data from l_exp to month sheet expenses section """
 
         worksheet = self.writer.sheets[month]
 
@@ -110,10 +115,13 @@ class ExcelGen:
         worksheet.merge_range(f'A{index+1}:D{index+1}', "Total", self.color_row)
 
         # Sum all expenses
-        worksheet.write(index+2, 1, f'=SUM(B5:B{index})')
+        worksheet.write(index+2, 0, 'סה״כ הוצאות', self.subject_format)
+        worksheet.write(index+2, 1, f'=SUM(B5:B{index})', self.amount_format)
 
     def write_month_income(self, l_inc, month):
-        """ Get list of expenses and write them is the month specified """
+        """ Args: l_inc: list of income [[subject, amount], [...], ...]
+                  month: short month name, ex: AUG ...
+                  Add the data from l_inc to month sheet income section """
 
         worksheet = self.writer.sheets[month]
 
@@ -137,9 +145,13 @@ class ExcelGen:
         worksheet.merge_range(f'H{index + 1}:K{index + 1}', "Total", self.color_row)
 
         # Sum all income
-        worksheet.write(index + 2, 8, f'=SUM(I5:I{index})')
+        worksheet.write(index + 2, 7, 'סה״כ הכנסות', self.subject_format)
+        worksheet.write(index + 2, 8, f'=SUM(I5:I{index})', self.amount_format)
 
     def write_year_expenses(self, months_data_group: dict, subjects_index: dict):
+        """ Args: months_data_group: (dict)
+                 subjects_index: (dict) store subjects and there y pos index ex: {subject: 5}
+                 Add the data from months_data_group to year sheet expenses section """
 
         worksheet = self.writer.sheets['YEAR']
         months_list = ["YEAR", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
@@ -163,7 +175,6 @@ class ExcelGen:
 
         # Fill the data
         index_x = 0
-        print(f'subject index: {subjects_index}')
         for month in months_list:
             if month in months_with_data:
                 for expense in months_data_group[month][0]:
@@ -176,7 +187,9 @@ class ExcelGen:
             index_x += 1
 
     def write_year_income(self, months_data_group: dict, subjects_index: dict):
-        """ Write to excel the income section, fill the data """
+        """ Args: months_data_group: (dict)
+                 subjects_index: (dict) store subjects and there y pos index ex: {subject: 5}
+                 Add the data from months_data_group to year sheet income section """
 
         worksheet = self.writer.sheets['YEAR']
         months_list = ["YEAR", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
@@ -199,7 +212,6 @@ class ExcelGen:
                 worksheet.write(y, x, 0.00, self.amount_format)
 
         index_x = 0
-        print(f'subject index: {subjects_index}')
         for month in months_list:
             if month in months_with_data:
                 for income in months_data_group[month][1]:
@@ -211,7 +223,11 @@ class ExcelGen:
             # each month on different x pos
             index_x += 1
 
-    def write_year_summary(self, index_y, sum_y: list):
+    def write_year_summary(self, index_y: int, sum_y: list):
+        """ Args: index_y: (int) y pos for summary location
+                  sum_y: (list) [income_sum_y_pos, expense_sum_y_pos]
+                  Add the data from months_data_group to year sheet expenses section """
+
         worksheet = self.writer.sheets['YEAR']
         months_list = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
@@ -233,7 +249,7 @@ class ExcelGen:
         worksheet.write(y_min, index_x+1, 'ממוצע חודשי', self.month_year_format)
 
         # Color final row
-        #worksheet.merge_range(f'B{y_min+2}:O{y_min+2}', "Total", self.color_row)
+        # worksheet.merge_range(f'B{y_min+2}:O{y_min+2}', "Total", self.color_row)
 
         subjects = ['סה״כ הכנסות', 'סה״כ הוצאות', 'סה״כ חסכון', 'אחוז חיסכון']
 
@@ -261,16 +277,12 @@ class ExcelGen:
             formula = f'=IFERROR({x_pos}{revenue_y}/{x_pos}{income_sum_y}, 0)'
             worksheet.write(y_min+4, l.index(x_pos)+1, formula, self.percent_format)
 
-
-        # Write the shield which will be over writen
-        # x_limit = len(months_list)
-        # y_limit = max(list(subjects_index.values()))
-        # y_min = min(list(subjects_index.values()))
-        # for x in range(1, x_limit):
-        #     for y in range(y_min, y_limit + 1):
-        #         worksheet.write(y, x, 0.00, self.amount_format)
-
     def additional_year_data(self, index_y, min_y, max_y, len_subjects, main_type):
+        """ Args: index_y, min_y, max_y: y positions
+                   len_subjects: len of subjects
+                   main_type: income/expense
+                   Add additional year data such as SUM/AVG of expenses or income """
+
         worksheet = self.writer.sheets['YEAR']
 
         d = {"Income": 4, "Expense": 18}
@@ -287,6 +299,9 @@ class ExcelGen:
             index_x += 1
 
     def add_sum_year(self, len_subjects, y_pos):
+        """ Args: len_subjects: (int), y_pos: (int)
+            Write the sum year addition data """
+
         worksheet = self.writer.sheets['YEAR']
         x_pos = 13
         # Write the head AVG
@@ -297,6 +312,9 @@ class ExcelGen:
             y_pos += 1
 
     def add_avg_year(self, len_subjects, y_pos):
+        """ Args: len_subjects: (int), y_pos: (int)
+            Write the sum year addition data """
+
         worksheet = self.writer.sheets['YEAR']
         x_pos = 14
         # Write the head AVG
@@ -307,10 +325,11 @@ class ExcelGen:
             y_pos += 1
 
     def current_worksheet(self, sheet_name):
+        """ Return the current worksheet """
         return self.writer.sheets[sheet_name]
 
     def create_all_sheets(self):
-        """ Create all the sheets for each month + year """
+        """ Create all the template sheets for each month + year + analysis"""
 
         list_name = ["YEAR", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
@@ -333,16 +352,92 @@ class ExcelGen:
         # Create Analysis Sheet
         worksheet = self.workbook.add_worksheet("Analysis")
 
-    def create_month_excel(self, month, l_exp, l_inc):
-        """ Takes the month, list_of_expenses, list_of_income.
-            Generate month on excel """
+    def create_month_excel(self, month: str, l_exp: list, l_inc: list, subjects_set: dict):
+        """ Args: month: (str),
+                  l_exp, l_inc: (list) of expenses/ income ex: [[subject: amount], [...], ...]
+                  subjects_set: (dict) store all group subjects for income and expenses (income/expenses_set)
+            Generate month Excel sheet for current month"""
 
         month = month.upper()
         self.write_month_expenses(l_exp, month)
         self.write_month_income(l_inc, month)
 
+        # Write Total Income - Total expenses
+        total_expenses_y = len(l_exp) + 7
+        total_income_y = len(l_inc) + 7
+
+        worksheet = self.writer.sheets[month]
+        worksheet.write(total_income_y + 2, 7, 'סה״כ הכנסות פחות הוצאות', self.addition_data_format)
+        worksheet.write(total_income_y + 2, 8, f'=SUM(-B{total_expenses_y}, I{total_income_y})', self.addition_data_format)
+
+        # Create month charts only if there is data to present
+        if l_exp or l_inc:
+            chart1 = self.create_month_chart1(month, l_exp, l_inc, subjects_set)
+            chart2 = self.create_month_chart2(month, l_exp, l_inc)
+            worksheet.insert_chart(f'F{total_income_y + 6}', chart1)
+            worksheet.insert_chart(f'P{total_income_y + 6}', chart2)
+
+    def create_month_chart1(self, month: str, exp_subjects, inc_subjects, subjects_set: dict):
+        """ Args: month: (str)
+                  subjects_set: (dict) store all group subjects for income and expenses (income/expenses_set)
+        Return chart object for month sheet """
+
+        months = ["YEAR", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+
+        # Get the year len of expenses subjects for values pos chart
+        expenses_subjects_set = subjects_set['expense_set']
+        income_subjects_set = subjects_set['income_set']
+        total_year_expenses_subjects = len(expenses_subjects_set)
+        total_year_income_subjects = len(income_subjects_set)
+
+        start_y_pos = total_year_income_subjects + 17
+        end_y_pos = start_y_pos + total_year_expenses_subjects - 1
+
+        chart = self.workbook.add_chart({'type': 'column'})
+
+        chart.add_series({
+            'name': 'סה״כ הוצאות לפי נושא',
+            'categories': ['YEAR', start_y_pos, 0, end_y_pos, 0],
+            'values': ['YEAR', start_y_pos, months.index(month), end_y_pos, months.index(month)]
+        })
+
+        return chart
+
+    def create_month_chart2(self, month, exp_subjects: list, inc_subjects: list):
+
+        """ Args: month: (str)
+                  exp_subjects: (list) store all group subjects for expenses
+                  inc_subjects: (list) store all group subjects for income
+            Return chart object for month sheet """
+
+        total_inc_pos = len(inc_subjects) + 6
+        total_exp_pos = len(exp_subjects) + 6
+        total_saving_pos = total_inc_pos + 3
+
+        chart = self.workbook.add_chart({'type': 'column'})
+
+        chart.add_series({
+            'name': 'סה״כ הוצאות',
+            'values': [month, total_exp_pos, 1, total_exp_pos, 1],
+            'color': 'red'
+        })
+        chart.add_series({
+            'name': 'סה״כ הכנסות',
+            'values': [month, total_inc_pos, 8, total_inc_pos, 8],
+            'color': 'blue'
+        })
+        chart.add_series({
+            'name': 'סה״כ חיסכון',
+            'values': [month, total_saving_pos, 8, total_saving_pos, 8],
+            'color': 'green'
+        })
+
+        return chart
+
     def create_year_excel(self, months_data_group: dict):
-        """ months_data_group = total expense for each subject """
+        """ Args: months_data_group (dict): months as keys, Like the var: months_data but as a group subjects,
+                months_data_group = total for each subject
+            Create the year Excel sheet """
 
         # Can use for keep track of where expense is located (list is organize)
         d = P.get_expense_and_income_subjects_set(months_data_group)
@@ -381,7 +476,6 @@ class ExcelGen:
         min_y = min(list(subjects_indexes.values())) + 1
         max_y = max(list(subjects_indexes.values())) + 1
         len_subjects = len(subjects_indexes)
-        print(len_subjects)
         income_sum_y_pos = index_y+1
         self.additional_year_data(index_y, min_y, max_y, len_subjects, 'Income')
 
@@ -471,7 +565,7 @@ class ExcelGen:
     def _generate_year_chart(self, year_y_pos, subjects):
         """ Generate charts with info from year sheet
                     Args: year_y_pos, subjects
-                    Return list with charts objects"""
+                    Return list with charts objects """
 
         charts = []
         month_index_y = year_y_pos
@@ -518,56 +612,23 @@ class ExcelGen:
 
         return chart
 
-
-        # # Configure a series with a secondary axis
-        # chart5.add_series({
-        #     'name': 'Bandwitdh_limit',
-        #     # 'categories': [sheet_name, 1, 1, len(bandwitdh_list), 1],
-        #     'values': [sheet_name, 1, columns.index('Bandwitdh_limit') + 1, len(bandwitdh_list),
-        #                columns.index('Bandwitdh_limit') + 1],
-        #     # 'y2_axis': 1,
-        #     'line': {'color': 'red'}
-        # })
-        #
-        # chart5.add_series({
-        #     'name': 'Bandwitdh',
-        #     'categories': [sheet_name, 1, 1, len(bandwitdh_list), 1],
-        #     'values': [sheet_name, 1, columns.index('Bandwitdh') + 1, len(bandwitdh_list),
-        #                columns.index('Bandwitdh') + 1],
-        #     # 'values': '=Sheet1!$A$2:$A$7',
-        #     # 'y2_axis': 0,
-        #     'line': {'color': '#4F81BD'}
-        # })
-    def create_excel(self, l_exp, l_inc):
-        """ Takes two types of lists on the expenses and the other for income. [[subject, total], [], ...]
-                   Create new Excel file """
+    def create_excel(self, months_data: dict):
+        """ Args: months_data: (dict) months as keys, each month store list with income and expenses
+                  ex: {..., 'AUG': [[[subject, amount], [...], ...], [subject, amount], ...], 'SEP': ..., ...}
+            Generate all data and insert to Excel file """
 
         # Create the template excel
         self.create_all_sheets()
 
-        # Access the XlsxWriter workbook and worksheet objects from the dataframe.
-        # worksheet = self.writer.sheets['JAN']
-
-        # Generate JAN month
-        self.create_month_excel("JAN", l_exp, l_inc)
-
-        # Close the Pandas Excel writer and output the Excel file.
-        self.workbook.close()
-
-    def create_excel1(self, months_data: dict):
-
-        # Create the template excel
-        self.create_all_sheets()
+        months_data_group = P.convert_months_data_to_group(months_data=months_data)
+        subjects_set = P.get_expense_and_income_subjects_set(months_data_group)
 
         for month, data in months_data.items():
             l_exp = data[0]
             l_inc = data[1]
 
             # Generate all months
-            self.create_month_excel(month, l_exp, l_inc)
-
-        months_data_group = P.convert_months_data_to_group(months_data=months_data)
-        print(months_data_group)
+            self.create_month_excel(month, l_exp, l_inc, subjects_set)
 
         # Generate year excel
         self.create_year_excel(months_data_group)
@@ -578,63 +639,3 @@ class ExcelGen:
 
 if __name__ == '__main__':
     pass
-    # excel = ExcelGen('12/3/22')
-    # l = [['אוכל', 120], ['סופר', 10]]
-    # l_inc = l.copy()
-    # l_inc.append(['מכון כושר', 230])
-    # l_inc.append(['מכון כושר', 230.5])
-    #
-    # excel.create_excel(l, l_inc)
-
-
-"""
-# Create a chart object.
-    chart = workbook.add_chart({'type': 'line'})
-    chart2 = workbook.add_chart({'type': 'line'})
-    chart3 = workbook.add_chart({'type': 'line'})
-    chart4 = workbook.add_chart({'type': 'line'})
-
-    # Configure the series of the chart from the dataframe data.
-    
-    chart.add_series({
-        'categories': [sheet_name, 1, 1, len(bandwitdh_list), 1],
-        'values':     [sheet_name, 1, columns.index('Bandwitdh')+1, len(bandwitdh_list), columns.index('Bandwitdh')+1],
-    })
-    chart2.add_series({
-        'categories': [sheet_name, 1, 1, len(bandwitdh_list), 1],
-        'values':     [sheet_name, 1, columns.index('Readaheads')+1, len(bandwitdh_list), columns.index('Readaheads')+1],
-        'line':   {'color': 'red'}
-    })
-    chart3.add_series({
-        'categories': [sheet_name, 1, 1, len(bandwitdh_list), 1],
-        'values':     [sheet_name, 1, columns.index('Resolutions')+1, len(bandwitdh_list), columns.index('Resolutions')+1],
-        'line':   {'color': 'purple'}
-    })
-    
-    # Configure the chart axes.
-    chart.set_x_axis({'name': 'Timestamps', 'position_axis': 'on_tick', 'text_axis': True,'num_format':'hh:mm:ss'})
-    chart.set_y_axis({'name': 'Bandwitdh', 'major_gridlines': {'visible': False}})
-    
-    chart2.set_x_axis({'name': 'Timestamps', 'position_axis': 'on_tick', 'text_axis': True,'num_format':'hh:mm:ss'})
-    chart2.set_y_axis({'name': 'Readaheads', 'major_gridlines': {'visible': False}})
-    
-    chart3.set_x_axis({'name': 'Timestamps', 'position_axis': 'on_tick', 'text_axis': True,'num_format':'hh:mm:ss'})
-    chart3.set_y_axis({'name': 'Resolutions', 'major_gridlines': {'visible': False}})
-    
-
-    # Turn off chart legend. It is on by default in Excel.
-    chart.set_legend({'position': 'none'})
-    
-    chart2.set_legend({'position': 'none'})
-    
-    chart3.set_legend({'position': 'none'})
-    
-    chart4.set_legend({'position': 'none'})
-
-    
-    
-    # Insert the chart into the worksheet.
-    worksheet.insert_chart('L3', chart)
-    worksheet.write(1, 11, 'Bandwitdh:')   
-    
-"""

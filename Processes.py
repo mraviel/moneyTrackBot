@@ -35,19 +35,24 @@ def Expense(input_text):
         return None
 
 
-def create_subjects_set(subjects_set, l: list):
-    """ Create set object which contain all subjects that have been this year """
+def create_subjects_set(subjects_set: set, data: list):
+    """ Create set object which contain all subjects that have been this year
+        Args: subjects_set: (set) of all unique subjects,
+        data: (list) store the amounts of subjects """
 
-    # loop throw expenses
-    for msg in l:
+    # loop throw subjects
+    for msg in data:
         subject = msg[0]
         if subject not in subjects_set:
             subjects_set.add(subject)
 
 
-def group_data(subjects_set, data):
+def group_data(subjects_set: set, data: list):
 
-    """ Group togather data with same subject, the group activate as sum for amount """
+    """ Group togather data with same subject, the group activate as sum for amount.
+        Args: subjects_set: (set) of all unique subjects
+              data: (list) [[income], [expenses]]
+        Return list with group subjects and the sum of the amount of the subject """
 
     group_sub_total = []
     for sub_set in subjects_set:
@@ -93,8 +98,9 @@ def convert_months_data_to_group(months_data):
     return months_data_group
 
 
-def get_expense_and_income_subjects_set(months_data_group):
-    """ Convert months_data dict to group months data """
+def get_expense_and_income_subjects_set(months_data_group: dict):
+    """ Args: months_data_group: (dict)
+        Return (dict) with total subjects of income/expenses keys(income_set, expense_set) """
 
     subjects_set_expenses = set()
     subjects_set_income = set()

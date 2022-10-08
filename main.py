@@ -167,12 +167,9 @@ def exportToExcel(update: Update, context: CallbackContext):
 
             months_data[months_names[i]] = [l_exp, l_inc]
 
-        print(months_data)
-        excel_gen.create_excel1(months_data)
-        # print(months_data)
+        excel_gen.create_excel(months_data)
 
     update.message.reply_text("Export To Excel")
-    # Process
 
 
 def Expenses(update: Update, context: CallbackContext):
