@@ -2,6 +2,7 @@ venv/
 __pycache__/
 flask_session/
 .idea/
+Excel/
 api_key.txt
 psql_key.txt
 db_stracture.sql
