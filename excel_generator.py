@@ -58,10 +58,10 @@ class ExcelGen:
     """ Create Excel file.
         To Create the file use only the function create_excel with months_data as argument """
 
-    def __init__(self):
+    def __init__(self, file_location):
 
         # Create a Pandas Excel writer using XlsxWriter as the engine.
-        self.writer = pd.ExcelWriter('pandas_simple.xlsx', engine='xlsxwriter')
+        self.writer = pd.ExcelWriter(f'{file_location}', engine='xlsxwriter')
 
         self.workbook = self.writer.book
 

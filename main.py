@@ -26,7 +26,6 @@ app = create_app()
 app.config['SQLALCHEMY_DATABASE_URI'] = PSQL_KEY
 
 db_command = DatabaseCommands(db)
-excel_gen = ExcelGen()
 
 # Updater for telegram
 updater = Updater(API_KEY, use_context=True)
@@ -132,42 +131,32 @@ def deleteRow(update: Update, context: CallbackContext):
 def exportToExcel(update: Update, context: CallbackContext):
     author_id = update.message.from_user.id
 
+    # Create Excel folder for this author
+    P.create_excel_folder(author_id)
+
+    # File name and file location
+    excel_file_name = f'{datetime.now().strftime("%Y_%m_%d")}.xlsx'
+    excel_file_location = f'Excel/{author_id}/{excel_file_name}'
+
+    # Create the Excel file
+    excel_gen = ExcelGen(excel_file_location)
+
     if not P.check_if_me(author_id, update):
         return
-
-    current_month = int(datetime.now().strftime("%m"))
-    current_year = int(datetime.now().strftime("%Y"))
-
-    months_data = {}
-    months_names = ["YEAR", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 
     # Get all messages for current user
     with app.app_context():
         all_expenses = db_command.get_all_expenses(author_id=author_id)
         all_income = db_command.get_all_income(author_id=author_id)
+        months_data = P.create_months_data(all_income, all_expenses)
 
-        # loop throw all month pass for this year
-        for i in range(1, current_month + 1):
-            l_exp = []
-            l_inc = []
-            # Get the messages for the current month and year
-            month_expenses = list(filter(lambda exp: exp.message_datetime.month == i
-                                         and exp.message_datetime.year == current_year, all_expenses))
+    # Fill the Excel file with data
+    excel_gen.create_excel(months_data)
 
-            month_income = list(filter(lambda inc: inc.message_datetime.month == i
-                                       and inc.message_datetime.year == current_year, all_income))
-
-            for expense in month_expenses:
-                exp = [expense.subject, float(expense.total)]
-                l_exp.append(exp)
-
-            for income in month_income:
-                inc = [income.subject, float(income.total)]
-                l_inc.append(inc)
-
-            months_data[months_names[i]] = [l_exp, l_inc]
-
-        excel_gen.create_excel(months_data)
+    # Send the file
+    chat_id = update.message.chat_id
+    document = open(excel_file_location, 'rb')
+    context.bot.send_document(chat_id, document)
 
     update.message.reply_text("Export To Excel")
 

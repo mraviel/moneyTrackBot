@@ -1,3 +1,6 @@
+import os
+from datetime import datetime
+
 import Constants as C
 
 
@@ -33,6 +36,41 @@ def Expense(input_text):
 
     else:
         return None
+
+
+def create_months_data(all_income, all_expenses):
+    """ Args: all_income: (list) all the income messages from db
+    Args: all_expenses: (list) all the expenses messages from db
+    Return months_data {dict} months as keys, with income and expenses for each month as values """
+
+    current_month = int(datetime.now().strftime("%m"))
+    current_year = int(datetime.now().strftime("%Y"))
+
+    months_data = {}
+    months_names = ["YEAR", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+
+    # loop throw all month pass for this year
+    for i in range(1, current_month + 1):
+        l_exp = []
+        l_inc = []
+        # Get the messages for the current month and year
+        month_expenses = list(filter(lambda exp: exp.message_datetime.month == i
+                                                 and exp.message_datetime.year == current_year, all_expenses))
+
+        month_income = list(filter(lambda inc: inc.message_datetime.month == i
+                                                and inc.message_datetime.year == current_year, all_income))
+
+        for expense in month_expenses:
+            exp = [expense.subject, float(expense.total)]
+            l_exp.append(exp)
+
+        for income in month_income:
+            inc = [income.subject, float(income.total)]
+            l_inc.append(inc)
+
+        months_data[months_names[i]] = [l_exp, l_inc]
+
+    return months_data
 
 
 def create_subjects_set(subjects_set: set, data: list):
@@ -118,6 +156,15 @@ def get_expense_and_income_subjects_set(months_data_group: dict):
         create_subjects_set(subjects_set_income, incomes)
 
     return {'expense_set': list(subjects_set_expenses), 'income_set': list(subjects_set_income)}
+
+
+def create_excel_folder(author_id):
+    """ Create Excel folder which store all files for users """
+    if not os.path.isdir('Excel'):
+        os.mkdir(f'Excel')
+
+    if not os.path.isdir(f'Excel/{author_id}'):
+        os.mkdir(f'Excel/{author_id}')
 
 
 def excel_file():
