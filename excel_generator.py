@@ -157,18 +157,21 @@ class ExcelGen:
         months_list = ["YEAR", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
         months_with_data = months_data_group.keys()
 
+        values = list(subjects_index.values())
+        if not values:
+            values = [0]
+
         # Write the shield which will be over writen
         x_limit = len(months_list)
-        y_limit = max(list(subjects_index.values())) + 4
-        y_min = min(list(subjects_index.values()))
+        y_limit = max(values) + 4
+        y_min = min(values)
         for x in range(1, x_limit):
             for y in range(y_min, y_limit + 1):
                 worksheet.write(y, x, "", self.amount_format)
 
         # Write the shield which will be over writen
-        x_limit = len(months_list)
-        y_limit = max(list(subjects_index.values()))
-        y_min = min(list(subjects_index.values()))
+        y_limit = max(values)
+        y_min = min(values)
         for x in range(1, x_limit):
             for y in range(y_min, y_limit + 1):
                 worksheet.write(y, x, 0.00, self.amount_format)
@@ -195,18 +198,20 @@ class ExcelGen:
         months_list = ["YEAR", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
         months_with_data = months_data_group.keys()
 
+        values = list(subjects_index.values())
+        if not values:
+            values = [0]
+
         # Write the shield which will be over writen
         x_limit = len(months_list)
-        y_limit = max(list(subjects_index.values())) + 4
-        y_min = min(list(subjects_index.values()))
+        y_limit = max(values) + 4
+        y_min = min(values)
         for x in range(1, x_limit):
             for y in range(y_min, y_limit + 1):
                 worksheet.write(y, x, "", self.amount_format)
 
         # Write the shield which will be over writen
-        x_limit = len(months_list)
-        y_limit = max(list(subjects_index.values()))
-        y_min = min(list(subjects_index.values()))
+        y_limit = max(values)
         for x in range(1, x_limit):
             for y in range(y_min, y_limit+1):
                 worksheet.write(y, x, 0.00, self.amount_format)
@@ -373,9 +378,12 @@ class ExcelGen:
         # Create month charts only if there is data to present
         if l_exp or l_inc:
             chart1 = self.create_month_chart1(month, l_exp, l_inc, subjects_set)
+            if chart1:
+                worksheet.insert_chart(f'F{total_income_y + 6}', chart1)
+
             chart2 = self.create_month_chart2(month, l_exp, l_inc)
-            worksheet.insert_chart(f'F{total_income_y + 6}', chart1)
-            worksheet.insert_chart(f'P{total_income_y + 6}', chart2)
+            if chart2:
+                worksheet.insert_chart(f'P{total_income_y + 6}', chart2)
 
     def create_month_chart1(self, month: str, exp_subjects, inc_subjects, subjects_set: dict):
         """ Args: month: (str)
@@ -392,6 +400,9 @@ class ExcelGen:
 
         start_y_pos = total_year_income_subjects + 17
         end_y_pos = start_y_pos + total_year_expenses_subjects - 1
+
+        if not expenses_subjects_set or not income_subjects_set:
+            return None
 
         chart = self.workbook.add_chart({'type': 'column'})
 
@@ -472,9 +483,13 @@ class ExcelGen:
         # Save data for charts column
         data_for_charts['Income'] = [3, d['income_set']]
 
+        values = list(subjects_indexes.values())
+        if not values:
+            values = [0]
+
         index_y += 2
-        min_y = min(list(subjects_indexes.values())) + 1
-        max_y = max(list(subjects_indexes.values())) + 1
+        min_y = min(values) + 1
+        max_y = max(values) + 1
         len_subjects = len(subjects_indexes)
         income_sum_y_pos = index_y+1
         self.additional_year_data(index_y, min_y, max_y, len_subjects, 'Income')
@@ -507,8 +522,8 @@ class ExcelGen:
         data_for_charts['Expense'] = [months_y, d['expense_set']]
 
         index_y += 2
-        min_y = min(list(subjects_indexes.values())) + 1
-        max_y = max(list(subjects_indexes.values())) + 1
+        min_y = min(values) + 1
+        max_y = max(values) + 1
         len_subjects = len(subjects_indexes)
         expense_sum_y_pos = index_y+1
         self.additional_year_data(index_y, min_y, max_y, len_subjects, 'Expense')
@@ -549,8 +564,12 @@ class ExcelGen:
         merge_income_charts = self._generate_merge_year_chart(income_y_pos, income_total_subjects, 'הכנסות לפי חודש')
 
         all_charts = income_charts + expenses_charts + summary_charts
-        all_charts.append(merge_expenses_chart)
-        all_charts.append(merge_income_charts)
+
+        if merge_expenses_chart:
+            all_charts.append(merge_expenses_chart)
+
+        if merge_income_charts:
+            all_charts.append(merge_income_charts)
 
         # Insert chart to Analysis sheet
         worksheet = self.writer.sheets['Analysis']
@@ -566,6 +585,8 @@ class ExcelGen:
         """ Generate charts with info from year sheet
                     Args: year_y_pos, subjects
                     Return list with charts objects """
+        if not subjects:
+            return []
 
         charts = []
         month_index_y = year_y_pos
@@ -591,6 +612,8 @@ class ExcelGen:
     def _generate_merge_year_chart(self, year_y_pos, subjects, chart_name):
 
         month_index_y = year_y_pos
+        if not subjects:
+            return []
 
         chart = self.workbook.add_chart({'type': 'line'})
 
