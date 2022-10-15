@@ -47,7 +47,7 @@ def create_months_data(all_income, all_expenses):
                                                  and exp.message_datetime.year == current_year, all_expenses))
 
         month_income = list(filter(lambda inc: inc.message_datetime.month == i
-                                                and inc.message_datetime.year == current_year, all_income))
+                                               and inc.message_datetime.year == current_year, all_income))
 
         for expense in month_expenses:
             exp = [expense.subject, float(expense.total)]
@@ -75,7 +75,6 @@ def create_subjects_set(subjects_set: set, data: list):
 
 
 def group_data(subjects_set: set, data: list):
-
     """ Group togather data with same subject, the group activate as sum for amount.
         Args: subjects_set: (set) of all unique subjects
               data: (list) [[income], [expenses]]
@@ -157,23 +156,21 @@ def create_excel_folder(author_id):
 
 
 def help_message():
-    return "I can help you keep track of your expenses and income" \
+    return "This bot design to help you keep track of your money" \
            "\nto help you find life balance." \
-           "\nover time my functionality will grow." \
-           "\n\nfor now here's a quick guide to help you use this bot:" \
+           "\n\nHere's a quick guide to help you start:" \
            "\nTo Add new expense just put your subject in one side and the amount" \
-           "\non the other side separate with ':' Example --> " \
-           "\nFood: 40  //  אוכל: 50 שח " \
-           "\nTo insert income just type '+' BEFORE the command" \
-           "\n\nHere are some of the commands you can run:" \
-           "\n/start --> Popup start message" \
-           "\n/help --> Help section" \
-           "\n/add --> Add new subject" \
-           "\n/delsub --> Delete subject" \
-           "\n/del --> remove row that added" \
-           "\n/xl --> Export excel file with data (in dev)" \
-           "\n/sum  --> All the expenses and income calculated for this month" \
-           "\n/exp --> All the expenses for this month until now"
-
-
-
+           "\non the other side separate with ':'" \
+           "\nExample --> Food: 40  //  אוכל: 50 שח " \
+           "\nTo insert income just type '+' before the subject" \
+           "\n\nAvailable functions:" \
+           "\n/start : Popup start message" \
+           "\n/help : Help section" \
+           "\n/add : Add new subject" \
+           "\n/delsub : Delete subject" \
+           "\n/del : Remove last added row" \
+           "\n/xl : Export excel file" \
+           "\n/sum : Total income - expenses" \
+           "\n/exp : Total expenses for the month" \
+           "\n/xlist : List of xl files stores for me" \
+           "\n/xlsave : Download an old Excel file"

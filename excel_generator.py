@@ -1,8 +1,6 @@
 import pandas as pd
 import Processes as P
 import math
-from datetime import datetime
-import os
 
 
 def add_to_format(existing_format, dict_of_properties, workbook):

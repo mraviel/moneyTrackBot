@@ -16,6 +16,8 @@ from Commands.exportToExcel import exportToExcel
 from Commands.Sum import Sum
 from Commands.Expenses import Expenses
 from Commands.handle_message import handle_message
+from Commands.excelList import excelList
+from Commands.downloadExcel import downloadExcel
 
 # Updater for telegram
 updater = Updater(API_KEY, use_context=True)
@@ -35,6 +37,8 @@ def main():
     updater.dispatcher.add_handler(CommandHandler('xl', exportToExcel))
     updater.dispatcher.add_handler(CommandHandler('sum', Sum))
     updater.dispatcher.add_handler(CommandHandler('exp', Expenses))
+    updater.dispatcher.add_handler(CommandHandler('xlist', excelList))
+    updater.dispatcher.add_handler(CommandHandler('xlsave', downloadExcel, pass_args=True))
 
     # Handle Messages
     updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_message))
