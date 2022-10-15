@@ -55,9 +55,8 @@ class DatabaseCommands:
 
         # Get the last current user message
         last_message_obj = M.Messages.query.filter_by(author_id=author_id). \
-            order_by(M.Messages.message_id.desc()).first()
+            order_by(M.Messages.message_datetime.desc()).first()
 
-        print(last_message_obj)
         if last_message_obj:
             delete_last_message = self.db.session.get(M.Messages, last_message_obj.message_id)
             self.db.session.delete(delete_last_message)

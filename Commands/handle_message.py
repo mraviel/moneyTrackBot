@@ -3,6 +3,7 @@ from telegram.ext.callbackcontext import CallbackContext
 from app import app
 from app import db_command
 import Processes as P
+from datetime import datetime
 
 
 def handle_message(update: Update, context: CallbackContext):
@@ -26,7 +27,7 @@ def handle_message(update: Update, context: CallbackContext):
     data = {
         'message_id': update.message.message_id,
         'user_id': update.message.from_user.id,
-        'message_datetime': update.message.date.ctime(),
+        'message_datetime': datetime.now().ctime(),
         'is_expense': response['is_expense'],
         'subject': response['subject'],
         'total': response['total']
