@@ -3,11 +3,6 @@ from datetime import datetime
 import Constants as C
 
 
-def check_if_me(a, b):
-    return True
-
-
-# All the processes
 def Expense(input_text):
     user_message = str(input_text).lower()
     if ':' in user_message:

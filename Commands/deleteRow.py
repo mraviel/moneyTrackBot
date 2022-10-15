@@ -13,5 +13,9 @@ def deleteRow(update: Update, context: CallbackContext):
     with app.app_context():
         last_message_obj = db_command.delete_last_row(author_id)
 
-    update.message.reply_text(f"Delete Last Row ({last_message_obj.subject}: {last_message_obj.total})")
+    if last_message_obj:
+        update.message.reply_text(f"Delete Last Row ({last_message_obj.subject}: {last_message_obj.total})")
+    else:
+        update.message.reply_text("There is no data to delete")
+
 
