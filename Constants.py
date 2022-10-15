@@ -1,12 +1,13 @@
+from decouple import config
 
 # Return the API for the session
-API_KEY = open('api_key.txt', 'r').readline()
+API_KEY = config("API_KEY")
 
 # PSQL KEY
-PSQL_KEY = open('psql_key.txt', 'r').readline().strip('\n')
+PSQL_KEY = config("PSQL_KEY")
 
 # My telegram id
-MY_ID = open('my_id.txt', 'r').readline().strip('\n')
+MY_ID = config("TELEGRAM_ID")
 
 
 def strip_all(s):
