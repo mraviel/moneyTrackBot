@@ -1,16 +1,10 @@
 import os
 from datetime import datetime
-
 import Constants as C
 
 
-def check_if_me(author_id, update):
-    # Only me can use this bot
-    if str(author_id) != str(C.MY_ID):
-        update.message.reply_text(f"You are not authorized for this bot")
-        return False
-    else:
-        return True
+def check_if_me(a, b):
+    return True
 
 
 # All the processes

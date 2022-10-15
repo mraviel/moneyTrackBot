@@ -4,14 +4,13 @@ from app import app
 from app import db_command
 import Processes as P
 from datetime import datetime
+from Decorators import authorized_user
 
 
+@authorized_user
 def handle_message(update: Update, context: CallbackContext):
     """ Handle message """
     author_id = update.message.from_user.id
-
-    if not P.check_if_me(author_id, update):
-        return
 
     # Recv text from user
     text = str(update.message.text).lower()

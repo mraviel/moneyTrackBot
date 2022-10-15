@@ -8,7 +8,7 @@ from DatabaseCommands import DatabaseCommands
 db = SQLAlchemy()
 def create_app():
     app = Flask(__name__)
-    db.init_app(app)
+    db.init_app(app)q
     return app
 
 

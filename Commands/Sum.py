@@ -3,16 +3,14 @@ from telegram.ext.callbackcontext import CallbackContext
 from app import app
 from app import db_command
 from datetime import datetime
-import Processes as P
+from Decorators import authorized_user
 
 
+@authorized_user
 def Sum(update: Update, context: CallbackContext):
     """ Calculate Income - all the expense's for current month"""
 
     author_id = update.message.from_user.id
-
-    if not P.check_if_me(author_id, update):
-        return
 
     current_month = int(datetime.now().strftime("%m"))
     current_year = int(datetime.now().strftime("%Y"))

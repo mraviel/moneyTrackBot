@@ -2,15 +2,13 @@ from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from app import app
 from app import db_command
-import Processes as P
+from Decorators import authorized_user
 
 
+@authorized_user
 def addSubject(update: Update, context: CallbackContext):
     """ Add subject """
     author_id = update.message.from_user.id
-
-    if not P.check_if_me(author_id, update):
-        return
 
     # Get all the subjects
     subjects = context.args

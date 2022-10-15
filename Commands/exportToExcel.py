@@ -5,8 +5,10 @@ from app import db_command
 import Processes as P
 from datetime import datetime
 from excel_generator import ExcelGen
+from Decorators import authorized_user
 
 
+@authorized_user
 def exportToExcel(update: Update, context: CallbackContext):
     author_id = update.message.from_user.id
 
@@ -19,9 +21,6 @@ def exportToExcel(update: Update, context: CallbackContext):
 
     # Create the Excel file
     excel_gen = ExcelGen(excel_file_location)
-
-    if not P.check_if_me(author_id, update):
-        return
 
     # Get all messages for current user
     with app.app_context():
