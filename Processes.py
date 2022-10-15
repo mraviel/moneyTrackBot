@@ -167,10 +167,6 @@ def create_excel_folder(author_id):
         os.mkdir(f'Excel/{author_id}')
 
 
-def excel_file():
-    pass
-
-
 def help_message():
     return "I can help you keep track of your expenses and income" \
            "\nto help you find life balance." \

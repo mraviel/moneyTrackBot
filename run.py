@@ -1,4 +1,5 @@
-from main import main, app
+from app import app
+from main import main
 import threading
 
 
@@ -16,7 +17,5 @@ if __name__ == '__main__':
 
     flask_thread = FlaskThread()
     flask_thread.start()
-
-    # telegram_thread = TelegramThread()
 
     main()
