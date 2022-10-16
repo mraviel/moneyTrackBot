@@ -43,7 +43,7 @@ ALTER TABLE public.messages OWNER TO user1;
 CREATE TABLE public.subjects (
     id integer NOT NULL,
     author_id integer NOT NULL,
-    subjectד_title character varying(20) NOT NULL
+    subjects_title character varying(20) NOT NULL
 );
 
 
@@ -100,7 +100,7 @@ ALTER TABLE ONLY public.subjects
 --
 
 ALTER TABLE ONLY public.subjects
-    ADD CONSTRAINT unique_subjects UNIQUE (author_id, subject_title);
+    ADD CONSTRAINT unique_subjects UNIQUE (author_id, subjects_title);
 
 
 --

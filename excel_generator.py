@@ -519,6 +519,10 @@ class ExcelGen:
         # Save data for charts column
         data_for_charts['Expense'] = [months_y, d['expense_set']]
 
+        values = list(subjects_indexes.values())
+        if not values:
+            values = [0]
+
         index_y += 2
         min_y = min(values) + 1
         max_y = max(values) + 1
