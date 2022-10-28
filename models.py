@@ -9,7 +9,7 @@ class Subjects(db.Model):
 
     __tablename__ = "subjects"
     id = db.Column(db.Integer, primary_key=True)
-    author_id = db.Column(db.Integer, unique=True, null_able=False)
+    author_id = db.Column(db.Integer, unique=True, nullable=False)
     subjects_title = db.Column(db.String(20), nullable=False)
 
 

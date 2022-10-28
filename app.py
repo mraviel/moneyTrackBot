@@ -9,6 +9,8 @@ db = SQLAlchemy()
 
 def create_app():
     app = Flask(__name__)
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = PSQL_KEY
     db.init_app(app)
     return app
 
