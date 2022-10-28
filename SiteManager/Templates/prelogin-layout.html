@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title>{% block title %}{% endblock %} - RChat</title>
+    </head>
+
+    <body>
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {%if messages %}
+                Category: {{ messages[0][1] }}
+                {{ messages[0][1] }}
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}
+        
+        {% endblock %}
+    </body>
+</html>

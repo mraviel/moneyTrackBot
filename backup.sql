@@ -72,6 +72,22 @@ ALTER SEQUENCE public.subjects_id_seq OWNED BY public.subjects.id;
 
 
 --
+-- Name: users; Type: TABLE; Schema: public; Owner: user1
+--
+
+CREATE TABLE public.users (
+    author_id integer NOT NULL,
+    first_name character varying NOT NULL,
+    last_name character varying NOT NULL,
+    is_bot boolean NOT NULL,
+    language_code character varying NOT NULL
+);
+
+
+ALTER TABLE public.users OWNER TO user1;
+
+
+--
 -- Name: subjects id; Type: DEFAULT; Schema: public; Owner: user1
 --
 
@@ -101,6 +117,14 @@ ALTER TABLE ONLY public.subjects
 
 ALTER TABLE ONLY public.subjects
     ADD CONSTRAINT unique_subjects UNIQUE (author_id, subjects_title);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: user1
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (author_id);
 
 
 --
