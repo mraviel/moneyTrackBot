@@ -1,6 +1,6 @@
 # from main import db, create_app
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
+from flask_login import UserMixin, AnonymousUserMixin
 from Constants import Admin_Username, Admin_Password
 
 db = SQLAlchemy()

@@ -1,23 +1,56 @@
-{% from "form_helper.html" import displayField %}
-
 {% extends "prelogin-layout.html" %}
 
 {% block title %}Login {% endblock %}
 
 {% block content %}
-    <h2>Login now!</h2>
-    <p>Enter your username/ password</p>
-
-    <form action="{{ url_for('login')}}" method="POST">
-        
-        {{ displayField(form.username, 'Username', autocomplete='off', autofocus=true) }}
-        {{ displayField(form.password, 'Password') }}
-
+    <div class="container p-5 my-5 bg-dark text-white d-flex justify-content-center border border-4">
         <div>
-            {{ form.submit_button }}
+            <h1>Login</h1>
+            <div>
+
+                <form action="{{ url_for('login')}}" method="POST">
+                    <!-- Username input -->
+                    <div class="form-outline mb-4">
+                        {{ form.username(class="form-control") }}
+                        <label class="form-label" for="username-field">Username</label>
+                        
+                        <!-- Error messages -->
+                        <ul>
+                            {% for error in form.username.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+                  
+                    <!-- Password input -->
+                    <div class="form-outline mb-4">
+                        {{ form.password(class="form-control") }}
+                        <label class="form-label" for="password-field">Password</label>
+                        
+                        <!-- Error messages -->
+                        <ul>
+                            {% for error in form.password.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+                  
+                    <!-- Submit button -->
+                    {{ form.submit_button(class="btn btn-primary btn-block") }}
+                    {{ form.csrf_token }} 
+
+                    <!-- Error messages -->
+
+                </form>
+            </div>
         </div>
+    </div>
+{% endblock %}
 
-        {{ form.csrf_token }} 
 
-    </form>
+{% block navbar %}
+    <!-- Navbar -->
+    {% include 'navbar.html' %}
 {% endblock %}

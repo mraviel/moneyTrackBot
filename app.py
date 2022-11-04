@@ -42,7 +42,9 @@ def home():
     username = "Fake Username"
     if current_user.is_authenticated:
         username = current_user.id
-    return render_template('home.html', username=username)
+
+    return render_template('home.html', username=username, current_user=current_user)
+    # return redirect(url_for('home'))
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -54,25 +56,25 @@ def login():
     if login_form.validate_on_submit():
         user = M.AdminUser.get(login_form.username.data)
         login_user(user)
-        return redirect(url_for('reg_requests'))
+        return redirect(url_for('home'))
 
-    return render_template("login_page.html", form=login_form)
+    return render_template("login_page.html", form=login_form, current_user=current_user)
 
 
 @app.route("/logout", methods=['GET'])
 def logout():
-    logout_user()
-    flash("You have logged out successfully")
+    if current_user.is_authenticated:
+        logout_user()
+        flash("You have logged out successfully")
     return redirect(url_for("home"))
 
 
 @app.route("/regRequests", methods=['GET', 'POST'])
 def reg_requests():
-    print(current_user)
     if not current_user.is_authenticated:
         flash("Please login first")
         return redirect(url_for("login"))
-    return render_template("register_requests_page.html")
+    return render_template("register_requests_page.html", current_user=current_user)
 
 
 @app.route("/register_request", methods=['POST'])
@@ -81,3 +83,10 @@ def register_requests():
         print("You requested something:")
         print(f'2 {request.json}')
         return 'Sent Successfully'
+
+# No cacheing at all for API endpoints.
+@app.after_request
+def add_header(response):
+    response.headers.add('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0')
+    return response
+
