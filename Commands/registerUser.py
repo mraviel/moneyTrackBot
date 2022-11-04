@@ -16,11 +16,20 @@ def registerUser(update: Update, context: CallbackContext):
             update.message.reply_text("You already have access for the bot")
             return
 
-        # Send POST request for the api
-        url = "http://127.0.0.1:5000/register_request"
+        if db_command.get_register_request_exists(author_details.id):
+            update.message.reply_text("Your register already sent, It's may take a while before you'll get a response")
+            return
+
+        # Add register request to db
         author_details = author_details.to_dict()
-        response = requests.post(url, json=author_details)
-        print(response.text)
+        print(author_details)
+        db_command.add_register_request(author_details)
+
+        # Send POST request for the api
+        # url = "http://127.0.0.1:5000/register_request"
+        # author_details = author_details.to_dict()
+        # response = requests.post(url, json=author_details)
+        # print(response.text)
 
         update.message.reply_text("Your register request has been sent, We'll notify you soon")
 

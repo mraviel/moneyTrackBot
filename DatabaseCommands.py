@@ -7,12 +7,20 @@ class DatabaseCommands:
         self.db = db
 
     @staticmethod
+    def get_register_request_exists(author_id):
+        return M.RegisterRequest.query.filter_by(author_id=author_id).first()
+
+    @staticmethod
+    def get_all_register_requests():
+        return M.RegisterRequest.query.all()
+
+    @staticmethod
     def get_user_exists(author_id):
         return M.Users.query.filter_by(author_id=author_id).first()
 
     @staticmethod
     def get_all_users():
-        return M.Users()
+        return M.Users.query.all()
 
     @staticmethod
     def get_all_subjects(author_id):
@@ -26,11 +34,32 @@ class DatabaseCommands:
     def get_all_income(author_id):
         return M.Messages.query.filter_by(author_id=author_id, is_expense=False).all()
 
+    def add_register_request(self, author_details):
+        """ Add register request """
+        register_request = M.RegisterRequest(author_id=author_details['id'], first_name=author_details['first_name'],
+                                             last_name=author_details['last_name'],
+                                             is_bot=author_details['is_bot'], language_code=author_details['language_code'])
+
+        self.db.session.add(register_request)
+        self.db.session.commit()
+
+    def remove_register_request(self, register_id):
+        """ Remove register request from db """
+        register_obj = M.RegisterRequest.query.filter_by(register_id=register_id).first()
+
+        # Delete
+        if register_obj:
+            delete_subject = self.db.session.get(M.RegisterRequest, register_obj.register_id)
+            print(delete_subject)
+            self.db.session.delete(delete_subject)
+            self.db.session.commit()
+            return True
+
     def add_user(self, author_details):
-        """ Add new message to db """
+        """ Add new user to db """
         User = M.Users(author_id=author_details.id, first_name=author_details.first_name,
-                        last_name=author_details.last_name,
-                        is_bot=author_details.is_bot, language_code=author_details.language_code)
+                       last_name=author_details.last_name,
+                       is_bot=author_details.is_bot, language_code=author_details.language_code)
 
         self.db.session.add(User)
         self.db.session.commit()

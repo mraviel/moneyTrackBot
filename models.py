@@ -41,6 +41,18 @@ class Users(db.Model):
     language_code = db.Column(db.String, nullable=False)
 
 
+class RegisterRequest(db.Model):
+    """ RegisterRequest model """
+
+    __tablename__ = "register_requests"
+    register_id = db.Column(db.Integer, nullable=False, primary_key=True, autoincrement=True)
+    author_id = db.Column(db.Integer, unique=True)
+    first_name = db.Column(db.String, nullable=False)
+    last_name = db.Column(db.String, nullable=False)
+    is_bot = db.Column(db.Boolean, nullable=False)
+    language_code = db.Column(db.String, nullable=False)
+
+
 class AdminUser(UserMixin):
     # proxy for a database of users
     user_database = {"admin": (Admin_Username, Admin_Password)}

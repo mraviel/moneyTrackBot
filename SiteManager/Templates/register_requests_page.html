@@ -23,6 +23,37 @@
                 <!-- <img src="static/style/images/telegram-icon2.gif" class="rounded-circle w-25 p-1 pt-2"/> -->
                 <div class="pt-4 w-100">
                     <ul class="list-group">
+                        {% for request in registerRequests%}
+
+                            <li id="li-{{request.register_id}}" class="list-group-item mt-3">
+                                <div class="row">
+                                    <b>ID: {{request.author_id}}</b></br>
+                                    <b>First Name: {{request.first_name}}</b></br>
+                                    <b>Last Name: {{request.last_name}}</b></br>
+                                </div>
+                                <form method="post" action="/regRequests" class="justify-content-end float-end">
+                                    <input id="accept-btn-{{request.register_id}}" type="submit" value="√" name="accept-{{request.register_id}}" class="btn btn-outline-primary float-end ms-3"/>
+                                    <input id="decline-btn-{{request.register_id}}" type="submit" value="X" name="decline-{{request.register_id}}" class="btn btn-outline-primary"/>
+                                </form>
+                            </li>
+
+                            <!-- <script>
+                                function remove_request(li_id){
+                                    console.log(li_id)
+                                    const li = document.querySelector(`#${li_id}`)
+                                    li.remove()
+                                }
+
+                                function accept_register(li_id){
+                                    // Do Some things
+                                    console.log("accepted")
+                                    remove_request(li_id)
+                                }
+                            </script> -->
+
+                        {% endfor %}
+
+
                         <li class="list-group-item mt-3">
                             <div class="row">
                                 <b>ID: 1121312</b></br>

@@ -44,7 +44,6 @@ def home():
         username = current_user.id
 
     return render_template('home.html', username=username, current_user=current_user)
-    # return redirect(url_for('home'))
 
 
 @app.route("/login", methods=['GET', 'POST'])
@@ -74,7 +73,25 @@ def reg_requests():
     if not current_user.is_authenticated:
         flash("Please login first")
         return redirect(url_for("login"))
-    return render_template("register_requests_page.html", current_user=current_user)
+
+    # Takes all register requests from db
+    with app.app_context():
+        registerRequests = db_command.get_all_register_requests()
+
+    if request.method == 'POST':
+        for key in request.form:
+            register_id = int(key.split('-')[1])
+            if key.startswith('accept-'):
+                # Add request to Users db And remove request from db
+                print(f"accept {register_id}")
+            elif key.startswith('decline-'):
+                # Remove request from db
+                print(f'decline {register_id}')
+                db_command.remove_register_request(register_id)
+            else:
+                print('error')
+
+    return render_template("register_requests_page.html", current_user=current_user, registerRequests=registerRequests)
 
 
 @app.route("/register_request", methods=['POST'])
