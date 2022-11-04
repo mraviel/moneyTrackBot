@@ -11,6 +11,10 @@ class DatabaseCommands:
         return M.RegisterRequest.query.filter_by(author_id=author_id).first()
 
     @staticmethod
+    def get_register_request_by_id(register_id):
+        return M.RegisterRequest.query.filter_by(register_id=register_id)
+
+    @staticmethod
     def get_all_register_requests():
         return M.RegisterRequest.query.all()
 
@@ -57,7 +61,7 @@ class DatabaseCommands:
 
     def add_user(self, author_details):
         """ Add new user to db """
-        User = M.Users(author_id=author_details.id, first_name=author_details.first_name,
+        User = M.Users(author_id=author_details.author_id, first_name=author_details.first_name,
                        last_name=author_details.last_name,
                        is_bot=author_details.is_bot, language_code=author_details.language_code)
 

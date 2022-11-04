@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="static/style/login_style.css">
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" src="/static/js/sijax/sijax.js"></script>
+    <script type="text/javascript">{{ g.sijax.get_js()|safe }}</script>
+    <!-- <link rel="stylesheet" href="static/style/login_style.css"> -->
     <title>Register Requests</title>
 </head>
 <body class="bg-dark">
@@ -20,7 +23,17 @@
             
             <div>
                 <h3>Here are the recent register request</h3>
-                <!-- <img src="static/style/images/telegram-icon2.gif" class="rounded-circle w-25 p-1 pt-2"/> -->
+
+                <!-- Flash messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {%if messages %}
+                    <div class="alert alert-success d-flex align-items-center" role="alert">
+                        {{ messages[0][1] }}
+                    </div>
+
+                {% endif %}
+                {% endwith %}
+
                 <div class="pt-4 w-100">
                     <ul class="list-group">
                         {% for request in registerRequests%}
@@ -31,64 +44,14 @@
                                     <b>First Name: {{request.first_name}}</b></br>
                                     <b>Last Name: {{request.last_name}}</b></br>
                                 </div>
-                                <form method="post" action="/regRequests" class="justify-content-end float-end">
-                                    <input id="accept-btn-{{request.register_id}}" type="submit" value="√" name="accept-{{request.register_id}}" class="btn btn-outline-primary float-end ms-3"/>
-                                    <input id="decline-btn-{{request.register_id}}" type="submit" value="X" name="decline-{{request.register_id}}" class="btn btn-outline-primary"/>
-                                </form>
+
+                                <div class="justify-content-end float-end">
+                                    <button id="accept-btn-{{request.register_id}}" name="accept-{{request.register_id}}" onClick="Sijax.request('accept_server_request', [this.id]);" class="btn btn-outline-primary float-end ms-3">√</button>
+                                    <button id="decline-btn-{{request.register_id}}" name="decline-{{request.register_id}}" onClick="Sijax.request('decline_server_request', [this.id]);" class="btn btn-outline-primary">X</button>
+                                </div>
                             </li>
 
-                            <!-- <script>
-                                function remove_request(li_id){
-                                    console.log(li_id)
-                                    const li = document.querySelector(`#${li_id}`)
-                                    li.remove()
-                                }
-
-                                function accept_register(li_id){
-                                    // Do Some things
-                                    console.log("accepted")
-                                    remove_request(li_id)
-                                }
-                            </script> -->
-
                         {% endfor %}
-
-
-                        <li class="list-group-item mt-3">
-                            <div class="row">
-                                <b>ID: 1121312</b></br>
-                                <b>First Name: Aviel</b></br>
-                                <b>Last Name: Mala</b></br>
-                            </div>
-                            <div class="justify-content-end float-end">
-                                <button id="accept-btn" type="button" class="btn btn-outline-primary float-end ms-3 ">√</button>
-                                <button id="decline-btn" type="button" class="btn btn-outline-primary">X</button>
-                            </div>
-                        </li>
-
-                        <li class="list-group-item mt-3">
-                            <div class="row">
-                                <b>ID: 1121312</b></br>
-                                <b>First Name: Aviel</b></br>
-                                <b>Last Name: Mala</b></br>
-                            </div>
-                            <div class="justify-content-end float-end">
-                                <button id="accept-btn" type="button" class="btn btn-outline-primary float-end ms-3 ">√</button>
-                                <button id="decline-btn" type="button" class="btn btn-outline-primary">X</button>
-                            </div>
-                        </li>
-
-                        <li class="list-group-item mt-3">
-                            <div class="row">
-                                <b>ID: 1121312</b></br>
-                                <b>First Name: Aviel</b></br>
-                                <b>Last Name: Mala</b></br>
-                            </div>
-                            <div class="justify-content-end float-end">
-                                <button id="accept-btn" type="button" class="btn btn-outline-primary float-end ms-3 ">√</button>
-                                <button id="decline-btn" type="button" class="btn btn-outline-primary">X</button>
-                            </div>
-                        </li>
                         
                     </ul>
                 </div>

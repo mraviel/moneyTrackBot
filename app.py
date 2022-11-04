@@ -1,14 +1,17 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, flash, redirect, render_template, url_for, request
+from flask import Flask, flash, redirect, render_template, url_for, g
 from Constants import PSQL_KEY
 from DatabaseCommands import DatabaseCommands
 from SiteManager.wtforms_fields import LoginForm
 from flask_login import LoginManager, current_user, login_user, logout_user
 import models as M
 from Constants import Flask_Secret_Key
+import flask_sijax
+import os
 
 
 db = SQLAlchemy()
+path = os.path.join('.', os.path.dirname(__file__), 'SiteManager/static/js/sijax/')
 
 
 def create_app():
@@ -22,6 +25,9 @@ def create_app():
 # Configuration
 app = create_app()
 app.config['SQLALCHEMY_DATABASE_URI'] = PSQL_KEY
+app.config['SIJAX_STATIC_PATH'] = path
+app.config['SIJAX_JSON_URI'] = 'SiteManager/static/js/sijax/json2.js'
+flask_sijax.Sijax(app)
 
 db_command = DatabaseCommands(db)
 app.config['SECRET_KEY'] = Flask_Secret_Key
@@ -68,7 +74,8 @@ def logout():
     return redirect(url_for("home"))
 
 
-@app.route("/regRequests", methods=['GET', 'POST'])
+# @app.route("/regRequests", methods=['GET', 'POST'])
+@flask_sijax.route(app, '/regRequests')
 def reg_requests():
     if not current_user.is_authenticated:
         flash("Please login first")
@@ -78,32 +85,34 @@ def reg_requests():
     with app.app_context():
         registerRequests = db_command.get_all_register_requests()
 
-    if request.method == 'POST':
-        for key in request.form:
-            register_id = int(key.split('-')[1])
-            if key.startswith('accept-'):
-                # Add request to Users db And remove request from db
-                print(f"accept {register_id}")
-            elif key.startswith('decline-'):
-                # Remove request from db
-                print(f'decline {register_id}')
-                db_command.remove_register_request(register_id)
-            else:
-                print('error')
+    def accept_server_request(obj_response, html_name):
+        register_id = int(html_name.split('accept-btn-')[1])
+        register_obj = list(filter(lambda request: request.register_id == register_id, registerRequests))
+        if len(register_obj) == 1:
+            register_obj = register_obj[0]
+
+            # Add new user and remove user request
+            db_command.add_user(register_obj)
+            db_command.remove_register_request(register_obj.register_id)
+            flash(f"{register_obj.first_name} {register_obj.last_name} have been accepted")
+        # Refresh page
+        obj_response.script("location.reload()")
+
+    def decline_server_request(obj_response, html_name):
+        register_id = int(html_name.split('decline-btn-')[1])
+        db_command.remove_register_request(register_id)  # Remove register request
+
+        # Flash Response
+        register_obj = list(filter(lambda request: request.register_id == register_id, registerRequests))
+        if len(register_obj) == 1:
+            register_obj = register_obj[0]
+            flash(f"{register_obj.first_name} {register_obj.last_name} have been decline")
+        # Refresh page
+        obj_response.script("location.reload()")
+
+    if g.sijax.is_sijax_request:
+        g.sijax.register_callback('accept_server_request', accept_server_request)
+        g.sijax.register_callback('decline_server_request', decline_server_request)
+        return g.sijax.process_request()
 
     return render_template("register_requests_page.html", current_user=current_user, registerRequests=registerRequests)
-
-
-@app.route("/register_request", methods=['POST'])
-def register_requests():
-    if request.method == 'POST':
-        print("You requested something:")
-        print(f'2 {request.json}')
-        return 'Sent Successfully'
-
-# No cacheing at all for API endpoints.
-@app.after_request
-def add_header(response):
-    response.headers.add('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0')
-    return response
-

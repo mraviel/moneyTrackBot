@@ -1,13 +1,9 @@
 
-function remove_request(li_id){
-    console.log(li_id)
+function remove_request(btn_id){
+    let register_id = btn_id.split('-')[2]
+    let li_id = `li-${register_id}`
+    
+    // Remove li from window
     const li = document.querySelector(`#${li_id}`)
     li.remove()
-    
-}
-
-function accept_register(li_id){
-    // Do Some things
-    console.log("accepted")
-    remove_request(li_id)
 }
