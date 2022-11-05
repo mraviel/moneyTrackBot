@@ -1,6 +1,6 @@
 # from main import db, create_app
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin, AnonymousUserMixin
+from flask_login import UserMixin
 from Constants import Admin_Username, Admin_Password
 
 db = SQLAlchemy()
@@ -32,8 +32,6 @@ class Users(db.Model):
     """ Users model """
 
     __tablename__ = "users"
-    #id = db.Column(db.Integer, nullable=False, primary_key=True, autoincrement=True)
-
     author_id = db.Column(db.Integer, primary_key=True)
     first_name = db.Column(db.String, nullable=False)
     last_name = db.Column(db.String, nullable=False)

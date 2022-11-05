@@ -2,7 +2,6 @@ from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from app import app
 from app import db_command
-import requests
 
 
 def registerUser(update: Update, context: CallbackContext):
@@ -22,17 +21,7 @@ def registerUser(update: Update, context: CallbackContext):
 
         # Add register request to db
         author_details = author_details.to_dict()
-        print(author_details)
         db_command.add_register_request(author_details)
 
-        # Send POST request for the api
-        # url = "http://127.0.0.1:5000/register_request"
-        # author_details = author_details.to_dict()
-        # response = requests.post(url, json=author_details)
-        # print(response.text)
-
         update.message.reply_text("Your register request has been sent, We'll notify you soon")
-
-
-        # db_command.add_user(author_details)
 

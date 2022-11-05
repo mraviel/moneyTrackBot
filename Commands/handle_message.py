@@ -47,7 +47,7 @@ def handle_message(update: Update, context: CallbackContext):
 
         # Send to user
         convertor = {True: '-', False: '+'}
-        update.message.reply_text(f"Saved to DB ({data['subject']}: {convertor[data['is_expense']]}{data['total']})")
+        update.message.reply_text(f"({data['subject']}: {convertor[data['is_expense']]}{data['total']}) Saved")
 
     else:
-        update.message.reply_text(f"Subject: {data['subject']} not in your subjects\n/add him before using him")
+        update.message.reply_text(f"Subject: {data['subject']} not in your subjects\nfirst /add the subject")

@@ -17,7 +17,6 @@ def start(update: Update, context: CallbackContext):
         if not subjects:
             update.message.reply_text("I'v seen there are no subjects defined\n/add subjects for committing new rows")
         else:
-            # subjects_title = list(filter(lambda subject: subject.subjects_title, subjects))
             subjects_title = ""
             for subject in subjects:
                 subjects_title += "\n" + subject.subjects_title
