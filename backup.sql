@@ -36,6 +36,45 @@ CREATE TABLE public.messages (
 
 ALTER TABLE public.messages OWNER TO user1;
 
+
+--
+-- Name: register_requests; Type: TABLE; Schema: public; Owner: user1
+--
+
+CREATE TABLE public.register_requests (
+    register_id integer NOT NULL,
+    author_id integer NOT NULL,
+    first_name character varying NOT NULL,
+    last_name character varying NOT NULL,
+    is_bot boolean NOT NULL,
+    language_code character varying NOT NULL
+);
+
+
+ALTER TABLE public.register_requests OWNER TO user1;
+
+--
+-- Name: register_requests_register_id_seq; Type: SEQUENCE; Schema: public; Owner: user1
+--
+
+CREATE SEQUENCE public.register_requests_register_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.register_requests_register_id_seq OWNER TO user1;
+
+--
+-- Name: register_requests_register_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: user1
+--
+
+ALTER SEQUENCE public.register_requests_register_id_seq OWNED BY public.register_requests.register_id;
+
+
 --
 -- Name: subjects; Type: TABLE; Schema: public; Owner: user1
 --
@@ -86,6 +125,12 @@ CREATE TABLE public.users (
 
 ALTER TABLE public.users OWNER TO user1;
 
+--
+-- Name: register_requests register_id; Type: DEFAULT; Schema: public; Owner: user1
+--
+
+ALTER TABLE ONLY public.register_requests ALTER COLUMN register_id SET DEFAULT nextval('public.register_requests_register_id_seq'::regclass);
+
 
 --
 -- Name: subjects id; Type: DEFAULT; Schema: public; Owner: user1
@@ -101,6 +146,22 @@ ALTER TABLE ONLY public.subjects ALTER COLUMN id SET DEFAULT nextval('public.sub
 
 ALTER TABLE ONLY public.messages
     ADD CONSTRAINT messages_pkey PRIMARY KEY (message_id);
+
+
+--
+-- Name: register_requests register_requests_author_id_key; Type: CONSTRAINT; Schema: public; Owner: user1
+--
+
+ALTER TABLE ONLY public.register_requests
+    ADD CONSTRAINT register_requests_author_id_key UNIQUE (author_id);
+
+
+--
+-- Name: register_requests register_requests_pkey; Type: CONSTRAINT; Schema: public; Owner: user1
+--
+
+ALTER TABLE ONLY public.register_requests
+    ADD CONSTRAINT register_requests_pkey PRIMARY KEY (register_id);
 
 
 --
