@@ -1,4 +1,6 @@
 import models as M
+from datetime import datetime
+from sqlalchemy import extract
 
 
 class DatabaseCommands:
@@ -38,11 +40,26 @@ class DatabaseCommands:
     def get_all_income(author_id):
         return M.Messages.query.filter_by(author_id=author_id, is_expense=False).all()
 
+    def get_this_month_expenses(self, author_id):
+        return self.db.session.query(M.Messages).filter(M.Messages.author_id == author_id,
+                                                        M.Messages.is_expense == True,
+                                                        extract('month', M.Messages.message_datetime) >= datetime.today().month,
+                                                        extract('year', M.Messages.message_datetime) >= datetime.today().year
+                                                        ).all()
+
+    def get_this_month_income(self, author_id):
+        return self.db.session.query(M.Messages).filter(M.Messages.author_id == author_id,
+                                                        M.Messages.is_expense == False,
+                                                        extract('month', M.Messages.message_datetime) >= datetime.today().month,
+                                                        extract('year', M.Messages.message_datetime) >= datetime.today().year
+                                                        ).all()
+
     def add_register_request(self, author_details):
         """ Add register request """
         register_request = M.RegisterRequest(author_id=author_details['id'], first_name=author_details['first_name'],
                                              last_name=author_details['last_name'],
-                                             is_bot=author_details['is_bot'], language_code=author_details['language_code'])
+                                             is_bot=author_details['is_bot'],
+                                             language_code=author_details['language_code'])
 
         self.db.session.add(register_request)
         self.db.session.commit()
@@ -54,7 +71,6 @@ class DatabaseCommands:
         # Delete
         if register_obj:
             delete_subject = self.db.session.get(M.RegisterRequest, register_obj.register_id)
-            print(delete_subject)
             self.db.session.delete(delete_subject)
             self.db.session.commit()
             return True
@@ -126,5 +142,3 @@ class DatabaseCommands:
 
         self.db.session.add(Message)
         self.db.session.commit()
-
-

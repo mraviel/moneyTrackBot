@@ -2,7 +2,6 @@ from telegram.update import Update
 from telegram.ext.callbackcontext import CallbackContext
 from app import app
 from app import db_command
-from datetime import datetime
 from Decorators import authorized_user
 
 
@@ -12,16 +11,11 @@ def Expenses(update: Update, context: CallbackContext):
 
     author_id = update.message.from_user.id
 
-    current_month = int(datetime.now().strftime("%m"))
-    current_year = int(datetime.now().strftime("%Y"))
-
     # Get all messages for current user
     with app.app_context():
-        all_expenses = db_command.get_all_expenses(author_id=author_id)
 
         # Get the messages for the current month
-        month_expenses = list(filter(lambda exp: exp.message_datetime.month == current_month
-                                     and exp.message_datetime.year == current_year, all_expenses))
+        month_expenses = db_command.get_this_month_expenses(author_id=author_id)
 
         expenses = 0
         for expense in month_expenses:
