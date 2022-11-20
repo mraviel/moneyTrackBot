@@ -68,7 +68,7 @@ class ExcelGen:
         self.subject_amount_title_format = self.workbook.add_format({'border': 1})
         self.subject_format = self.workbook.add_format({'border': 1})
         self.amount_format = self.workbook.add_format({'border': 1, 'num_format': '0.00'})
-        self.expense_income_title_format = self.workbook.add_format({'border': 1, 'font_size': 20, 'bg_color': 'yellow'})
+        self.expense_income_title_format = self.workbook.add_format({'border': 1, 'font_size': 20, 'bg_color': 'yellow', 'color': 'black'})
         self.expense_income_format = self.workbook.add_format()
         self.total_format = self.workbook.add_format()
         self.color_row = self.workbook.add_format({'bg_color': 'gray'})
@@ -593,7 +593,7 @@ class ExcelGen:
         charts = []
         month_index_y = year_y_pos
         for subject in subjects:
-            chart = self.workbook.add_chart({'type': 'line'})
+            chart = self.workbook.add_chart({'type': 'column'})
 
             chart.add_series({
                 'categories': ['YEAR', month_index_y, 1, month_index_y, 12],
