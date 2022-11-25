@@ -164,6 +164,7 @@ def help_message():
            "\nExample --> Food: 40  //  אוכל: 50 שח " \
            "\nTo insert income just type '+' before the subject" \
            "\n\nAvailable functions:" \
+           "\n/register : Send request to register" \
            "\n/start : Popup start message" \
            "\n/help : Help section" \
            "\n/add : Add new subject" \

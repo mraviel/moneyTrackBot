@@ -11,7 +11,7 @@ def authorized_user(func):
         with app.app_context():
             db_user = db_command.get_user_exists(author_id)
             if not db_user:
-                update.message.reply_text(f"You are not authorized for this bot")
+                update.message.reply_text(f"You are not authorized for this bot, You can /register")
                 return
         func(*args, **kwargs)
     return wrapper

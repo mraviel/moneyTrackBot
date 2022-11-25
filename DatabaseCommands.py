@@ -56,6 +56,8 @@ class DatabaseCommands:
 
     def add_register_request(self, author_details):
         """ Add register request """
+        if 'last_name' not in author_details:
+            author_details['last_name'] = 'Unknown'
         register_request = M.RegisterRequest(author_id=author_details['id'], first_name=author_details['first_name'],
                                              last_name=author_details['last_name'],
                                              is_bot=author_details['is_bot'],
